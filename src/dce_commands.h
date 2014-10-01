@@ -21,7 +21,7 @@ typedef struct {
     } value;
 } arg_t;
 
-typedef dce_result_t (*cmdhandler_t)(dce_t* dce, int kind, int argc, arg_t* argv);
+typedef dce_result_t (*cmdhandler_t)(dce_t* dce, void* group_context, int kind, int argc, arg_t* argv);
 
 typedef struct
 {
@@ -30,7 +30,7 @@ typedef struct
     int flags;
 } command_desc_t;
 
-void dce_register_command_group(dce_t* dce, const char* leadin, const command_desc_t* desc, int ndesc);
+void dce_register_command_group(dce_t* dce, const char* leadin, const command_desc_t* desc, int ndesc, void* ctx);
 
 
 #endif//__DCE_COMMANDS

@@ -3,6 +3,6 @@
 
 #include "dce.h"
 
-void dce_register_info_comands(dce_t* dce);
+void dce_register_info_commands(dce_t* dce);
 
 #endif//__DCE_INFO_COMMANDS_H

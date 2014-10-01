@@ -14,8 +14,9 @@ typedef enum {
 
 typedef struct {
     const char* leadin;
-    const command_desc_t* desc;
-    int ndesc;
+    const command_desc_t* commands;
+    int commands_count;
+    void* context;
 } command_group_t;
 
 

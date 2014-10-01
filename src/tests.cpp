@@ -9,6 +9,7 @@ bool g_reset = false;
 extern "C" {
 #include "dce.h"
 #include "dce_info_commands.h"
+#include "dce_test_commands.h"
 
 void user_dce_transmit(const char* data, size_t size)
 {
@@ -26,7 +27,7 @@ void user_dce_reset()
 TEST_CASE("call extended format commands", "[dce]")
 {
     dce_t* dce = dce_init(1024);
-    dce_register_info_comands(dce);
+    dce_register_info_commands(dce);
     g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+GMI\r") == DCE_OK );
     dce_uninit(dce);
@@ -55,6 +56,22 @@ TEST_CASE("set format s-parameter", "[dce]")
     g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV1\r") == DCE_OK );
     REQUIRE( g_tx_data == "ATV1\r\r\nOK\r\n");
+    dce_uninit(dce);
+}
+
+TEST_CASE("parse extended format arguments", "[dce][.]")
+{
+    dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE0\r") == DCE_OK);
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTARGS=1,\"abcdef\",42,\"a b c\"\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\nOK\r\n");
+    REQUIRE(args.param1 == 1);
+    REQUIRE(std::string(args.param2) == "abcdef");
+    REQUIRE(args.param3 == 42);
+    REQUIRE(std::string(args.param4) == "a b c");
     dce_uninit(dce);
 }
 

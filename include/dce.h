@@ -19,7 +19,7 @@ typedef enum {
 
 
 
-dce_t* dce_init(int rx_buffer_size);
+dce_t* dce_init(size_t rx_buffer_size);
 
 dce_result_t dce_handle_input(dce_t* parser, const char* cmd, size_t size);
 

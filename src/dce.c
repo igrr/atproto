@@ -41,7 +41,7 @@ static const char* dce_result_code_v1[] = {
 };
 
 
-dce_t* dce_init(int rx_buffer_size)
+dce_t* dce_init(size_t rx_buffer_size)
 {
     dce_t* ctx = (dce_t*) malloc(sizeof(dce_t));
     
@@ -70,7 +70,7 @@ void dce_init_defaults(dce_t* ctx)
 }
 
 
-void dce_register_command_group(dce_t* ctx, const char* leadin, const command_desc_t* desc, int ndesc)
+void dce_register_command_group(dce_t* ctx, const char* leadin, const command_desc_t* desc, int ndesc, void* group_ctx)
 {
     if (ctx->command_groups_count == DCE_MAX_COMMAND_GROUPS)
     {
@@ -78,9 +78,11 @@ void dce_register_command_group(dce_t* ctx, const char* leadin, const command_de
         return;
     }
     command_group_t* next = ctx->command_groups + ctx->command_groups_count;
-    next->desc   = desc;
-    next->ndesc  = ndesc;
-    next->leadin = leadin;
+    next->commands       = desc;
+    next->commands_count = ndesc;
+    next->leadin         = leadin;
+    next->context        = group_ctx;
+
     ctx->command_groups_count++;
 }
 
@@ -156,25 +158,25 @@ dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, si
 {
     for (int igrp = 0; igrp < ctx->command_groups_count; ++igrp)
     {
-        command_group_t* cg = ctx->command_groups + igrp;
+        command_group_t* group = ctx->command_groups + igrp;
         int pos;
         for (pos = 0;
-             pos < size && cg->leadin[pos] != 0 && buf[pos] == cg->leadin[pos];
+             pos < size && group->leadin[pos] != 0 && buf[pos] == group->leadin[pos];
              ++pos);
-        if (cg->leadin[pos] != 0)
+        if (group->leadin[pos] != 0)
             continue;
-        for (int icmd = 0; icmd < cg->ndesc; ++icmd)
+        for (int icmd = 0; icmd < group->commands_count; ++icmd)
         {
-            const command_desc_t* cmd = cg->desc + icmd;
-            for (;pos < size && cmd->name[pos] != 0 && buf[pos] == cmd->name[pos]; ++pos);
+            const command_desc_t* command = group->commands + icmd;
+            for (;pos < size && command->name[pos] != 0 && buf[pos] == command->name[pos]; ++pos);
             
-            if (cmd->name[pos] != 0)
+            if (command->name[pos] != 0)
                 continue;
             
             if (pos < size && buf[pos] != '=' && buf[pos] != '?')
                 continue;
             
-            int flags = cmd->flags;
+            int flags = command->flags;
 
             if (pos == size)    // 5.4.3.1 Action execution, no arguments
             {
@@ -183,11 +185,9 @@ dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, si
                     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
                     return DCE_OK;
                 }
-                return (*cmd->fn)(ctx, DCE_EXEC, 0, 0);
+                return (*command->fn)(ctx, group->context, DCE_EXEC, 0, 0);
             }
-            
-            
-            
+
         }
     }
     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
@@ -231,7 +231,7 @@ dce_result_t dce_process_command_line(dce_t* ctx)
     if (c == '+')
         return dce_process_extended_format_command(ctx, buf, size);
 
-    if (c == 'S')  // S-paramter (5.3.2)
+    if (c == 'S')  // S-parameter (5.3.2)
         return dce_process_sparameter_command(ctx, buf + 1, size - 1);
     
     return dce_process_basic_command(ctx, buf, size);
