@@ -8,7 +8,7 @@ Mostly based on [Recommendation V.250].
 What works so far:
   - DCE (i.e modem side) only. Haven't started working on DTE (host) side.
   - Parsing and handling of basic syntax commands and S-parameters
-  - Parsing of extended syntax commands (currently only in "execute" mode)
+  - Parsing of extended syntax commands and arguments
   - Registration of extended command groups
   - Stubs for some standard info commands, e.g. AT+GMI
   - V0 and V1 response formatting
@@ -16,7 +16,6 @@ What works so far:
   - Result code suppression
  
 Next up:
-  - Handling of get, set, query modes for extended syntax commands and parameters
   - Transitions between data mode and command mode
   - Add unit tests (only 3 now, seriously)
   - Add hooks into ESP platform (see user_dce_transmit, user_dce_reset...)
