@@ -21,6 +21,7 @@ typedef struct {
 
 
 #define DCE_MAX_COMMAND_GROUPS 8
+#define DCE_MAX_ARGS 8
 
 struct dce_
 {
@@ -33,9 +34,6 @@ struct dce_
     
     state_t state;
     
-    char    escape;         /// escape symbol received flag
-    char    escape_char;    /// used to collect the escaped character code
-    
     char    cr;             /// 6.2.1 parameter S3
     char    lf;             /// 6.2.2 parameter S4
     char    bs;             /// 6.2.3 parameter S5
@@ -46,5 +44,9 @@ struct dce_
 
 void dce_init_defaults(dce_t* dce);
 
+#define S1(x) #x
+#define S2(x) S1(x)
+#define LOCATION __FILE__ "@" S2(__LINE__)
+#define DCE_FAIL(msg) user_dce_assert("Internal error in " LOCATION ": " msg)
 
 #endif//__DCE_PRIVATE_H

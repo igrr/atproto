@@ -20,6 +20,12 @@ void user_dce_reset()
 {
     g_reset = true;
 }
+    
+void user_dce_assert(const char* msg)
+{
+    throw std::runtime_error(msg);
+}
+
 }
 
 #define DCE_HANDLE_INPUT_STR(dce, str) dce_handle_input(dce, str, sizeof(str) - 1)
@@ -59,7 +65,7 @@ TEST_CASE("set format s-parameter", "[dce]")
     dce_uninit(dce);
 }
 
-TEST_CASE("parse extended format arguments", "[dce][.]")
+TEST_CASE("parse extended format arguments", "[dce]")
 {
     dce_t* dce = dce_init(1024);
     extended_commands_test_t args;

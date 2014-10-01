@@ -3,14 +3,17 @@
 
 #include "dce.h"
 
-#define DCE_QUERY 1
-#define DCE_EXEC  2
-#define DCE_SET   4
-#define DCE_GET   8
+#define DCE_PARAM    1
+#define DCE_ACTION   2
+#define DCE_TEST     4
+#define DCE_EXEC     8
+#define DCE_WRITE   16
+#define DCE_READ    32
 
 typedef enum {
     ARG_TYPE_NUMBER,
-    ARG_TYPE_STRING
+    ARG_TYPE_STRING,
+    ARG_NOT_SPECIFIED
 } arg_type_t;
 
 typedef struct {
@@ -21,7 +24,7 @@ typedef struct {
     } value;
 } arg_t;
 
-typedef dce_result_t (*cmdhandler_t)(dce_t* dce, void* group_context, int kind, int argc, arg_t* argv);
+typedef dce_result_t (*cmdhandler_t)(dce_t* dce, void* group_context, int kind, size_t argc, arg_t* argv);
 
 typedef struct
 {

@@ -3,10 +3,10 @@
 #include "dce_test_commands.h"
 #include <string.h>
 
-dce_result_t dce_handle_TESTARGS(dce_t* dce, void* group_ctx, int kind, int argc, arg_t* argv)
+dce_result_t dce_handle_TESTARGS(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     extended_commands_test_t* ctx = (extended_commands_test_t*) group_ctx;
-    if (kind == DCE_SET)
+    if (kind & DCE_EXEC)
     {
         if (argc != 4 ||
             argv[0].type != ARG_TYPE_NUMBER ||
@@ -33,7 +33,7 @@ dce_result_t dce_handle_TESTARGS(dce_t* dce, void* group_ctx, int kind, int argc
 }
 
 static const command_desc_t commands[] = {
-        {"TESTARGS", &dce_handle_TESTARGS, DCE_SET },
+        {"TESTARGS", &dce_handle_TESTARGS, DCE_ACTION | DCE_EXEC },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);

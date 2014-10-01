@@ -31,5 +31,6 @@ void dce_uninit(dce_t* parser);
 
 extern void user_dce_transmit(const char* data, size_t size);
 extern void user_dce_reset();
+extern void user_dce_assert(const char* message);
 
 #endif //__DCE_H

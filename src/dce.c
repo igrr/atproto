@@ -59,8 +59,6 @@ dce_t* dce_init(size_t rx_buffer_size)
 
 void dce_init_defaults(dce_t* ctx)
 {
-    ctx->escape          = 0;
-    ctx->escape_char     = 0;
     ctx->cr              = 13;
     ctx->lf              = 10;
     ctx->bs              = 8;
@@ -74,7 +72,7 @@ void dce_register_command_group(dce_t* ctx, const char* leadin, const command_de
 {
     if (ctx->command_groups_count == DCE_MAX_COMMAND_GROUPS)
     {
-        // TODO: throw an assert here
+        DCE_FAIL("command groups limit exceeded");
         return;
     }
     command_group_t* next = ctx->command_groups + ctx->command_groups_count;
@@ -85,7 +83,7 @@ void dce_register_command_group(dce_t* ctx, const char* leadin, const command_de
 
     ctx->command_groups_count++;
 }
-
+#if 0
 // substitute escape sequence character pointed to by pc with unescaped character
 // returns DCE_OK is character was consumed
 // returns DCE_CONTINUE if the character should be processed further
@@ -119,6 +117,7 @@ dce_result_t dce_process_escape(dce_t* ctx, char* pc)
     *pc = ctx->escape_char;
     return DCE_CONTINUE;
 }
+#endif
 
 void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
 {
@@ -154,11 +153,120 @@ void dce_emit_information_response(dce_t* dce, const char* response)
     user_dce_transmit(crlf, 2);
 }
 
+dce_result_t dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
+{
+    // we'll be parsing arguments in place
+    char* buf = (char*) cbuf; //it actually is a modifiable rx buffer, so TODO: remove const everywhere up the call chain
+    int argc = 0;
+    
+    while (size > 0)
+    {
+        char c = *buf;
+        arg_t arg;
+        arg.type = ARG_NOT_SPECIFIED;
+        arg.value.string = 0;
+        
+        if (c == '"')    // it's a string
+        {
+            ++buf;
+            --size;
+            const char* str = buf;
+            for (;size > 0 && *buf != '"'; ++buf, --size)
+            {
+                // TODO: handle escape sequences
+            }
+            if (*buf != '"')    // line has ended without a closing quote
+                return DCE_INVALID_INPUT;
+            *buf = 0;
+            arg.type = ARG_TYPE_STRING;
+            arg.value.string = str;
+            ++buf;
+            --size;
+            if (size > 0 && *buf == ',')
+            {
+                ++buf;
+                --size;
+            }
+        }
+        // TODO: add support for hex and binary numbers (5.4.2.1)
+        else if (c >= '0' && c <= '9') // it's a number
+        {
+            arg.value.number = dce_expect_number(&buf, &size, 0);
+            arg.type = ARG_TYPE_NUMBER;
+            if (size > 0 && *buf == ',')
+            {
+                ++buf;
+                --size;
+            }
+        }
+        else if (c != ',')
+        {
+            return DCE_INVALID_INPUT;
+        }
+        args[argc++] = arg;
+    }
+    *pargc = argc;
+    return DCE_OK;
+}
+
+dce_result_code_t dce_process_args_run_command(dce_t* ctx, const command_group_t* group, const command_desc_t* command, const char* buf, size_t size)
+{
+    int flags = command->flags;
+    if (size == 0)    // 5.4.3.1 Action execution, no arguments
+    {
+        if (!(flags & DCE_EXEC))
+        {
+            dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+            return DCE_OK;
+        }
+        return (*command->fn)(ctx, group->context, DCE_EXEC, 0, 0);
+    }
+    
+    char c = buf[0];
+    if (c == '?')   // 5.4.4.3 parameter read (AT+FOO?)
+    {
+        if (!(flags & DCE_PARAM) || !(flags & DCE_READ))
+        {
+            dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+            return DCE_OK;
+        }
+        return (*command->fn)(ctx, group->context, DCE_READ, 0, 0);
+    }
+    else if (c == '=')
+    {
+        if (size > 1 && buf[1] == '?')  // 5.4.3.2, 5.4.4.4 action or parameter test (AT+FOO=?)
+        {
+            if (!(flags & DCE_TEST))
+            {
+                // paramter or action is supported, but does not respond to queries
+                dce_emit_basic_result_code(ctx, DCE_RC_OK);
+                return DCE_OK;
+            }
+            return (*command->fn)(ctx, group->context, DCE_TEST, 0, 0);
+        }
+        else    // 5.4.4.2, 5.4.3.1 paramter set or execute action with subparameters (AT+FOO=params)
+        {
+            size_t argc = 0;
+            arg_t args[DCE_MAX_ARGS];
+            int rc = dce_parse_args(buf + 1, size - 1, &argc, args);
+            if (rc != DCE_OK)
+            {
+                dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+                return DCE_OK;
+            }
+            int kind = (flags & DCE_ACTION) ? DCE_EXEC : DCE_WRITE;
+            return (*command->fn)(ctx, group->context, kind, argc, args);
+        }
+    }
+    DCE_FAIL("should be unreachable");
+    return DCE_OK;
+}
+
 dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, size_t size)
 {
     for (int igrp = 0; igrp < ctx->command_groups_count; ++igrp)
     {
-        command_group_t* group = ctx->command_groups + igrp;
+        const command_group_t* group = ctx->command_groups + igrp;
         int pos;
         for (pos = 0;
              pos < size && group->leadin[pos] != 0 && buf[pos] == group->leadin[pos];
@@ -176,18 +284,7 @@ dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, si
             if (pos < size && buf[pos] != '=' && buf[pos] != '?')
                 continue;
             
-            int flags = command->flags;
-
-            if (pos == size)    // 5.4.3.1 Action execution, no arguments
-            {
-                if (!(flags & DCE_EXEC))
-                {
-                    dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
-                    return DCE_OK;
-                }
-                return (*command->fn)(ctx, group->context, DCE_EXEC, 0, 0);
-            }
-
+            return dce_process_args_run_command(ctx, group, command, buf + pos, size - pos);
         }
     }
     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
@@ -198,7 +295,7 @@ dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, si
 dce_result_t dce_process_command_line(dce_t* ctx)
 {
     // 5.2.1 command line format
-    size_t size = ctx->rx_buffer_size;
+    size_t size = ctx->rx_buffer_pos;
     char *buf = ctx->rx_buffer;
     
     if (size < 2)
@@ -229,7 +326,7 @@ dce_result_t dce_process_command_line(dce_t* ctx)
     
     char c = buf[0];
     if (c == '+')
-        return dce_process_extended_format_command(ctx, buf, size);
+        return dce_process_extended_format_command(ctx, buf + 1, size - 1);
 
     if (c == 'S')  // S-parameter (5.3.2)
         return dce_process_sparameter_command(ctx, buf + 1, size - 1);
