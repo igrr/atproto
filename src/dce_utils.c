@@ -42,10 +42,20 @@ int dce_expect_number(const char** buf, size_t *psize, int def_val)
 
 void dce_itoa(int val, char* buf, size_t bufsize, size_t* outsize)
 {
-    char negative = val < 0;
+    char negative = 0;
+    if (val == 0)
+    {
+        buf[0] = '0';
+        *outsize = 1;
+        return;
+    }
+    else if (val < 0)
+    {
+        negative = 1;
+    }
     int digits[10];
     int i;
-    for (i = 0; val > 0; ++i)
+    for (i = 0; val != 0; ++i)
     {
         int div = val / 10;
         digits[i] = val - div * 10;
@@ -63,9 +73,9 @@ void dce_itoa(int val, char* buf, size_t bufsize, size_t* outsize)
         *buf = '-';
         ++buf;
     }
-    for (; i>=0; --i, ++buf)
+    for (; i > 0; --i, ++buf)
     {
-        *buf = '0' + digits[i];
+        *buf = '0' + ((negative) ? -digits[i - 1] : digits[i - 1]);
     }
     *outsize = buf - start;
 }
@@ -83,7 +93,7 @@ void dce_itoa_zeropad(int val, char* buf, size_t bufsize)
     
     for (int j = 0; j < bufsize - i; ++j, ++buf)
         *buf = '0';
-    for (; i>=0; --i, ++buf)
-        *buf = '0' + digits[i];
+    for (; i > 0; --i, ++buf)
+        *buf = '0' + digits[i - 1];
 }
 

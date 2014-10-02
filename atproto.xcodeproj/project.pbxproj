@@ -14,6 +14,7 @@
 		A1EEC32B19DC812100E94BBC /* tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32519DC812100E94BBC /* tests.cpp */; };
 		A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32619DC812100E94BBC /* dce_utils.c */; };
 		A1EEC33619DC82BA00E94BBC /* dce_test in Copy binary */ = {isa = PBXBuildFile; fileRef = A1EEC31319DC7FCF00E94BBC /* dce_test */; };
+		A1EEC37419DD361C00E94BBC /* test_dce_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC37319DD361C00E94BBC /* test_dce_utils.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,6 +48,7 @@
 		A1EEC33319DC814C00E94BBC /* dce.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce.h; path = include/dce.h; sourceTree = "<group>"; };
 		A1EEC33419DC814C00E94BBC /* dce_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce_common.h; path = include/dce_common.h; sourceTree = "<group>"; };
 		A1EEC33519DC814C00E94BBC /* catch.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = catch.hpp; path = include/catch.hpp; sourceTree = "<group>"; };
+		A1EEC37319DD361C00E94BBC /* test_dce_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_dce_utils.cpp; path = src/test_dce_utils.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +96,7 @@
 				A1EEC32419DC812100E94BBC /* dce.c */,
 				A1EEC33319DC814C00E94BBC /* dce.h */,
 				A1EEC32519DC812100E94BBC /* tests.cpp */,
+				A1EEC37319DD361C00E94BBC /* test_dce_utils.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -172,6 +175,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1EEC37419DD361C00E94BBC /* test_dce_utils.cpp in Sources */,
 				A1EEC32919DC812100E94BBC /* dce_test_commands.c in Sources */,
 				A1EEC32819DC812100E94BBC /* dce_info_commands.c in Sources */,
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
