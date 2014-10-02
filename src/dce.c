@@ -142,14 +142,67 @@ void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
     }
 }
 
-void dce_emit_information_response(dce_t* dce, const char* response)
+void dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc)
+{
+    if (dce->suppress_rc)   // 6.2.5 Result code suppression
+        return;
+    const char crlf[] = {dce->cr, dce->lf};
+    if (dce->response_fmt == 1)
+    {
+        user_dce_transmit(crlf, 2);
+    }
+    if (size == -1)
+        size = strlen(command_name);
+    user_dce_transmit("+", 1);
+    user_dce_transmit(command_name, size);
+    user_dce_transmit(":", 1);
+    for (size_t iarg = 0; iarg < argc; ++iarg)
+    {
+        arg_t* arg = args + iarg;
+        if (arg->type == ARG_TYPE_STRING)
+        {
+            const char* str = arg->value.string;
+            size_t str_size = strlen(str);
+            user_dce_transmit(str, str_size);
+        }
+        else if (arg->type == ARG_TYPE_NUMBER)
+        {
+            char buf[12];
+            size_t str_size;
+            dce_itoa(arg->value.number, buf, sizeof(buf), &str_size);
+            user_dce_transmit(buf, str_size);
+        }
+        if (iarg != argc - 1)
+            user_dce_transmit(",", 1);
+    }
+    user_dce_transmit(crlf, 2);
+}
+
+void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size)
+{
+    if (dce->suppress_rc)   // 6.2.5 Result code suppression
+        return;
+    const char crlf[] = {dce->cr, dce->lf};
+    if (dce->response_fmt == 1)
+    {
+        user_dce_transmit(crlf, 2);
+    }
+    if (size == -1)
+        size = strlen(response);
+    user_dce_transmit(response, size);
+    user_dce_transmit(crlf, 2);
+}
+
+void dce_emit_information_response(dce_t* dce, const char* response, size_t size)
 {
     const char crlf[] = {dce->cr, dce->lf};
     if (dce->response_fmt == 1)
     {
         user_dce_transmit(crlf, 2);
     }
-    user_dce_transmit(response, strlen(response));
+    if (size == -1)
+        size = strlen(response);
+    user_dce_transmit(response, size);
     user_dce_transmit(crlf, 2);
 }
 
@@ -191,7 +244,7 @@ dce_result_t dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t*
         // TODO: add support for hex and binary numbers (5.4.2.1)
         else if (c >= '0' && c <= '9') // it's a number
         {
-            arg.value.number = dce_expect_number(&buf, &size, 0);
+            arg.value.number = dce_expect_number((const char**)&buf, &size, 0);
             arg.type = ARG_TYPE_NUMBER;
             if (size > 0 && *buf == ',')
             {

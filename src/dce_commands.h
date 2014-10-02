@@ -34,6 +34,7 @@ typedef struct
 } command_desc_t;
 
 void dce_register_command_group(dce_t* dce, const char* leadin, const command_desc_t* desc, int ndesc, void* ctx);
+void dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc);
 
 
 #endif//__DCE_COMMANDS

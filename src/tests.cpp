@@ -81,3 +81,51 @@ TEST_CASE("parse extended format arguments", "[dce]")
     dce_uninit(dce);
 }
 
+TEST_CASE("read-only parameter", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE0\r") == DCE_OK);
+    g_tx_data.clear();
+    
+    args.param1 = 10;
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM1?\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\n+TESTPARAM1:10\r\n");
+    g_tx_data.clear();
+    
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM1=?\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\n+TESTPARAM1:(1-100)\r\n");
+    g_tx_data.clear();
+    
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM1=20\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\nERROR\r\n");
+    g_tx_data.clear();
+
+    dce_uninit(dce);
+}
+
+TEST_CASE("read-write parameter", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE0\r") == DCE_OK);
+    g_tx_data.clear();
+    
+    args.param3 = 123;
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3?\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\n+TESTPARAM3:123\r\n");
+    g_tx_data.clear();
+    
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3=?\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\n+TESTPARAM3:(0-127)\r\n");
+    g_tx_data.clear();
+    
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3=42\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\nOK\r\n");
+    REQUIRE(args.param3 == 42);
+    g_tx_data.clear();
+    
+    dce_uninit(dce);
+}

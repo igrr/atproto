@@ -1,6 +1,7 @@
 #include "dce.h"
 #include "dce_commands.h"
 #include "dce_test_commands.h"
+#include "dce_utils.h"
 #include <string.h>
 
 dce_result_t dce_handle_TESTARGS(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
@@ -32,8 +33,57 @@ dce_result_t dce_handle_TESTARGS(dce_t* dce, void* group_ctx, int kind, size_t a
 
 }
 
+dce_result_t dce_handle_TESTPARAM1(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    extended_commands_test_t* ctx = (extended_commands_test_t*) group_ctx;
+    if (kind & DCE_READ)
+    {
+        arg_t result = {ARG_TYPE_NUMBER, .value.number=ctx->param1};
+        dce_emit_extended_result_code_with_args(dce, "TESTPARAM1", -1, &result, 1);
+    }
+    else if (kind & DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+TESTPARAM1:(1-100)", -1);
+    }
+    else
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+    }
+    return DCE_OK;
+}
+
+dce_result_t dce_handle_TESTPARAM3(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    extended_commands_test_t* ctx = (extended_commands_test_t*) group_ctx;
+    if (kind & DCE_READ)
+    {
+        arg_t result = {ARG_TYPE_NUMBER, .value.number=ctx->param3};
+        dce_emit_extended_result_code_with_args(dce, "TESTPARAM3", -1, &result, 1);
+    }
+    else if (kind & DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+TESTPARAM3:(0-127)", -1);
+    }
+    else if (kind & DCE_WRITE)
+    {
+        if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER)
+        {
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        }
+        else
+        {
+            ctx->param3 = argv[0].value.number;
+            dce_emit_basic_result_code(dce, DCE_RC_OK);
+        }
+    }
+    return DCE_OK;
+}
+
+
 static const command_desc_t commands[] = {
-        {"TESTARGS", &dce_handle_TESTARGS, DCE_ACTION | DCE_EXEC },
+        {"TESTARGS",    &dce_handle_TESTARGS,   DCE_ACTION | DCE_EXEC},
+        {"TESTPARAM1",  &dce_handle_TESTPARAM1, DCE_PARAM | DCE_TEST | DCE_READ},
+        {"TESTPARAM3",  &dce_handle_TESTPARAM3, DCE_PARAM | DCE_TEST | DCE_READ | DCE_WRITE},
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);

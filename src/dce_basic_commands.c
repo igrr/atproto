@@ -151,7 +151,7 @@ dce_result_t dce_get_sparameter(dce_t* ctx, int id)
             dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
             return DCE_OK;
     }
-    dce_emit_information_response(ctx, text);
+    dce_emit_information_response(ctx, text, 3);
     dce_emit_basic_result_code(ctx, DCE_RC_OK);
     return DCE_OK;
 }
