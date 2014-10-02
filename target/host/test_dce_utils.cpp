@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include <limits.h>
 extern "C"
 {
 #include "dce_common.h"

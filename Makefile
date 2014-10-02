@@ -3,24 +3,32 @@ OBJ_DIR := obj
 BIN_DIR := bin
 BINARY_NAME := $(BIN_DIR)/dce_test
 
-C_FILES := $(wildcard $(SRC_DIR)/*.c)
-CPP_FILES := $(wildcard $(SRC_DIR)/*.cpp)
-C_OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(notdir $(C_FILES:.c=.o)))
-CPP_OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(notdir $(CPP_FILES:.cpp=.o)))
+TARGET := host
 
-#LD_FLAGS += 
-#CC_FLAGS += 
-CPPFLAGS+=-Iinclude
+COMMON_OBJ_FILES := $(SRC_DIR)/dce.o \
+					$(SRC_DIR)/dce_basic_commands.o \
+					$(SRC_DIR)/dce_utils.o \
+					$(SRC_DIR)/dce_info_commands.o
+
+TARGET_DIR := target/$(TARGET)
+
+TARGET_OBJ_FILES := $(TARGET_DIR)/dce_test_commands.o \
+					$(TARGET_DIR)/test_dce_utils.o \
+					$(TARGET_DIR)/tests.o
+
+
+CPPFLAGS+=-Iinclude -Isrc/include
+
 all: $(BINARY_NAME)
 
-$(BINARY_NAME): $(CPP_OBJ_FILES) $(C_OBJ_FILES)
+$(BINARY_NAME): $(COMMON_OBJ_FILES) $(TARGET_OBJ_FILES)
 	g++ $(LD_FLAGS) -o $@ $^
 
-$(CPP_OBJ_FILES): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR) 
-	g++ $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+# $(CPP_OBJ_FILES): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR) 
+# 	g++ $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-$(C_OBJ_FILES): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR) 
-	gcc $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+# $(C_OBJ_FILES): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR) 
+# 	gcc $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(BINARY_NAME): | $(BIN_DIR)
 
@@ -31,7 +39,8 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 clean:
-	rm -rf $(OBJ_DIR)
+	rm $(SRC_DIR)/*.o
+	rm $(TARGET_DIR)/*.o
 	rm -rf $(BIN_DIR)
 
 test: all
