@@ -19,12 +19,10 @@ What works so far:
 Next up:
   - Baud rate command (+IPR)
   - Add hooks into ESP platform (see user_dce_transmit, user_dce_reset...)
-  - Compile for ESP8266 using new gcc-xtensa
   - Transitions between data mode and command mode
   - More unit tests
   - Implement all the IP and WiFi related commands for ESP
   - Handling of malformed input (besides returning ERROR)
-  - Better makefile (to work both for the host and ESP8266)
   - DTE part of the business
 
 Make

@@ -12,8 +12,14 @@ ESPTOOL := ../esptool/esptool
 
 SDK_BASE := ../esp8266_sdk_v0.9.1
 
+SDK_AT_DIR := $(SDK_BASE)/examples/at
+
+SDK_DRIVER_OBJ_FILES := uart.o
+SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES))
+
 CPPFLAGS += -I$(XTENSA_LIBS)/include \
-			-I$(SDK_BASE)/include
+			-I$(SDK_BASE)/include \
+			-I$(SDK_AT_DIR)/include
 
 LDFLAGS  += -L$(XTENSA_LIBS)/lib \
 			-L$(XTENSA_LIBS)/arch/lib \
@@ -24,7 +30,8 @@ CFLAGS+=-std=c99
 
 LIBS := c gcc hal phy net80211 lwip wpa main json ssl upgrade upgrade_ssl
 
-CFLAGS += -Os -g -O2 -Wpointer-arith -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
+#-Werror 
+CFLAGS += -Os -g -O2 -Wpointer-arith -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
 
 LDFLAGS	+= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
@@ -36,7 +43,7 @@ APP_FW_1 := $(BIN_DIR)/0x00000.bin
 APP_FW_2 := $(BIN_DIR)/0x40000.bin
 
 
-$(APP_AR): $(COMMON_OBJ_PATHS) $(TARGET_OBJ_PATHS)
+$(APP_AR): $(COMMON_OBJ_PATHS) $(TARGET_OBJ_PATHS) $(SDK_DRIVER_OBJ_PATHS)
 	$(AR) cru $@ $^
 
 $(APP_AR): | $(BIN_DIR)
@@ -53,6 +60,10 @@ $(APP_FW_2): $(APP_OUT)
 firmware: $(APP_FW_1) $(APP_FW_2)
 
 all: firmware
-	
+
+clean-driver:
+	rm -r $(SDK_DRIVER_OBJ_PATHS)
+
+clean:	clean-driver
 
 .PHONY: all firmware
