@@ -30,9 +30,15 @@ Next up:
 Make
 ----
 
-```
-make test
-```
+###   Host
+- Run ```make test```
+
+### ESP8266:
+
+- Adjust `XTENSA_TOOCHAIN`, `XTENSA_LIBS`, `SDK_BASE`, `ESPTOOL` directories in target/esp8266/target.mk.
+
+- Run ```make all TARGET=esp8266```
+- The firmware will be generated in bin/0x00000.bin and bin/0x40000.bin
 
 License
 -------
