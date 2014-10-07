@@ -32,6 +32,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A13BCD1D19E3B83200C12FFB /* uart.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uart.c; path = target/esp8266/uart.c; sourceTree = "<group>"; };
+		A13BCD1E19E3B83200C12FFB /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = target/esp8266/main.c; sourceTree = "<group>"; };
+		A13BCD2119E3CDFD00C12FFB /* uart.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = uart.h; path = target/esp8266/uart.h; sourceTree = "<group>"; };
 		A1EEC31319DC7FCF00E94BBC /* dce_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dce_test; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1EEC32119DC812100E94BBC /* dce_basic_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_basic_commands.c; path = src/dce_basic_commands.c; sourceTree = "<group>"; };
 		A1EEC32219DC812100E94BBC /* dce_info_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_info_commands.c; path = src/dce_info_commands.c; sourceTree = "<group>"; };
@@ -62,6 +65,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A13BCD1C19E3B82300C12FFB /* esp8266 */ = {
+			isa = PBXGroup;
+			children = (
+				A13BCD1D19E3B83200C12FFB /* uart.c */,
+				A13BCD1E19E3B83200C12FFB /* main.c */,
+				A13BCD2119E3CDFD00C12FFB /* uart.h */,
+			);
+			name = esp8266;
+			sourceTree = "<group>";
+		};
 		A1EEC30A19DC7FCF00E94BBC = {
 			isa = PBXGroup;
 			children = (
@@ -101,6 +114,7 @@
 		A1EEC37519DD7F5D00E94BBC /* target */ = {
 			isa = PBXGroup;
 			children = (
+				A13BCD1C19E3B82300C12FFB /* esp8266 */,
 				A1EEC37619DD7F6900E94BBC /* host */,
 			);
 			name = target;

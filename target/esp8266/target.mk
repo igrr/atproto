@@ -1,4 +1,6 @@
-TARGET_OBJ_FILES := main.o
+TARGET_OBJ_FILES := main.o \
+					uart.o
+
 TARGET_OBJ_PATHS := $(addprefix $(TARGET_DIR)/,$(TARGET_OBJ_FILES))
 
 XTENSA_TOOCHAIN := ../xtensa-lx106-elf/bin
@@ -14,7 +16,7 @@ SDK_BASE := ../esp8266_sdk_v0.9.1
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
 
-SDK_DRIVER_OBJ_FILES := uart.o
+SDK_DRIVER_OBJ_FILES := 
 SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES))
 
 CPPFLAGS += -I$(XTENSA_LIBS)/include \
