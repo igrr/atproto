@@ -21,7 +21,7 @@ typedef enum {
 
 dce_t* dce_init(size_t rx_buffer_size);
 
-dce_result_t dce_handle_input(dce_t* parser, const char* cmd, size_t size);
+dce_result_t dce_handle_input(dce_t* dce, const char* cmd, size_t size);
 
 void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result);
 
@@ -30,7 +30,7 @@ void dce_emit_information_response(dce_t* dce, const char* response, size_t size
 void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size);
 
 
-void dce_uninit(dce_t* parser);
+void dce_uninit(dce_t* dce);
 
 
 extern void user_dce_transmit(const char* data, size_t size);

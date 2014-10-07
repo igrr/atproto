@@ -28,12 +28,12 @@ LDFLAGS  += -L$(XTENSA_LIBS)/lib \
 			-L$(SDK_BASE)/lib
 
 CFLAGS+=-std=c99
-
+CPPFLAGS+=-DESP_PLATFORM=1
 
 LIBS := c gcc hal phy net80211 lwip wpa main json ssl upgrade upgrade_ssl
 
 #-Werror 
-CFLAGS += -Os -g -O2 -Wpointer-arith -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
+CFLAGS += -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
 
 LDFLAGS	+= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
@@ -66,6 +66,6 @@ all: firmware
 clean-driver:
 	rm -r $(SDK_DRIVER_OBJ_PATHS)
 
-clean:	clean-driver
+#clean:	clean-driver
 
 .PHONY: all firmware

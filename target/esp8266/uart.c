@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include "osapi.h"
 #include "ets_sys.h"
 #include "mem.h"
 #include "driver/uart_register.h"
@@ -13,17 +15,21 @@ struct _uart
 
 void ICACHE_FLASH_ATTR uart0_rx_handler(uart_t* uart)
 {
-    while(true)
+    if (READ_PERI_REG(UART_INT_ST(0)) & UART_RXFIFO_FULL_INT_ST)
     {
-        int rx_count = (READ_PERI_REG(UART_STATUS(0)) >> UART_RXFIFO_CNT_S) & UART_RXFIFO_CNT;
-        if (!rx_count)
-            break;
-
-        for(int cnt = 0; cnt < rx_count; ++cnt)
+        while(true)
         {
-            char c = READ_PERI_REG(UART_FIFO(0)) & 0xFF;
-            (*uart->rx_handler)(c);
+            int rx_count = (READ_PERI_REG(UART_STATUS(0)) >> UART_RXFIFO_CNT_S) & UART_RXFIFO_CNT;
+            if (!rx_count)
+                break;
+
+            for(int cnt = 0; cnt < rx_count; ++cnt)
+            {
+                char c = READ_PERI_REG(UART_FIFO(0)) & 0xFF;
+                (*uart->rx_handler)(c);
+            }
         }
+        WRITE_PERI_REG(UART_INT_CLR(0), UART_RXFIFO_FULL_INT_CLR);
     }
 }
 
@@ -36,12 +42,17 @@ void ICACHE_FLASH_ATTR uart0_wait_for_tx_fifo(size_t size_needed)
             break;
     }
 }
+void ICACHE_FLASH_ATTR uart0_transmit_char(char c)
+{
+    WRITE_PERI_REG(UART_FIFO(0), c);
+}
 
 void ICACHE_FLASH_ATTR uart0_transmit(const char* buf, size_t size)
 {
     while (size)
     {
         size_t part_size = (size > UART_TX_FIFO_SIZE) ? UART_TX_FIFO_SIZE : size;
+        size -= part_size;
 
         uart0_wait_for_tx_fifo(part_size);
         for(;part_size;--part_size, ++buf)
@@ -89,10 +100,21 @@ uart_t* ICACHE_FLASH_ATTR uart0_init(int baud_rate, uart_rx_handler_t rx_handler
     return uart;
 }
 
-
 void ICACHE_FLASH_ATTR uart0_uninit(uart_t* uart)
 {
     uart0_interrupt_disable(uart);
     // TODO: revert pin functions
     os_free(uart);
 }
+
+
+void ICACHE_FLASH_ATTR
+uart1_write_char(char c)
+{    
+}
+
+void ICACHE_FLASH_ATTR uart_disable_debug()
+{
+    ets_install_putc1((void *)&uart1_write_char);
+}
+

@@ -3,14 +3,14 @@
 #include "dce_private.h"
 #include "dce_utils.h"
 
-inline static dce_result_t dce_handle_ATZ(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATZ(dce_t* ctx, int val)
 {
     // use ATZ as reset
     user_dce_reset();
     return DCE_OK;
 }
 
-inline static dce_result_t dce_handle_ATV(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATV(dce_t* ctx, int val)
 {
     if (val != 0 && val != 1)
     {
@@ -23,7 +23,7 @@ inline static dce_result_t dce_handle_ATV(dce_t* ctx, int val)
 
 }
 
-inline static dce_result_t dce_handle_ATQ(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATQ(dce_t* ctx, int val)
 {
     if (val != 0 && val != 1)
     {
@@ -35,14 +35,14 @@ inline static dce_result_t dce_handle_ATQ(dce_t* ctx, int val)
     return DCE_OK;
 }
 
-inline static dce_result_t dce_handle_ATO(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATO(dce_t* ctx, int val)
 {
     // TODO: figure out if we need to implement ATO
     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
     return DCE_OK;
 }
 
-inline static dce_result_t dce_handle_ATE(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATE(dce_t* ctx, int val)
 {
     if (val != 0 && val != 1)
     {
@@ -54,7 +54,7 @@ inline static dce_result_t dce_handle_ATE(dce_t* ctx, int val)
     return DCE_OK;
 }
 
-inline static dce_result_t dce_handle_ATF(dce_t* ctx, int val)
+inline static dce_result_t SECTION_ATTR dce_handle_ATF(dce_t* ctx, int val)
 {
     dce_init_defaults(ctx);
     dce_emit_basic_result_code(ctx, DCE_RC_OK);
@@ -62,7 +62,7 @@ inline static dce_result_t dce_handle_ATF(dce_t* ctx, int val)
 }
 
 
-dce_result_t dce_process_basic_command(dce_t* ctx, const char* buf, size_t size)
+dce_result_t SECTION_ATTR dce_process_basic_command(dce_t* ctx, const char* buf, size_t size)
 {
     if (size < 1)
     {
@@ -109,7 +109,7 @@ dce_result_t dce_process_basic_command(dce_t* ctx, const char* buf, size_t size)
     return DCE_OK;
 }
 
-dce_result_t dce_set_sparameter(dce_t* ctx, int id, int value)
+dce_result_t SECTION_ATTR dce_set_sparameter(dce_t* ctx, int id, int value)
 {
     switch (id) {
         case 3:     // S3, 6.2.1 Command line termination character
@@ -131,7 +131,7 @@ dce_result_t dce_set_sparameter(dce_t* ctx, int id, int value)
     return DCE_OK;
 }
 
-dce_result_t dce_get_sparameter(dce_t* ctx, int id)
+dce_result_t SECTION_ATTR dce_get_sparameter(dce_t* ctx, int id)
 {
     char text[4];
     
@@ -156,7 +156,7 @@ dce_result_t dce_get_sparameter(dce_t* ctx, int id)
     return DCE_OK;
 }
 
-dce_result_t dce_process_sparameter_command(dce_t* ctx, const char* buf, size_t size)
+dce_result_t SECTION_ATTR dce_process_sparameter_command(dce_t* ctx, const char* buf, size_t size)
 {
     int param_number = dce_expect_number(&buf, &size, -1);
     if (param_number == -1)

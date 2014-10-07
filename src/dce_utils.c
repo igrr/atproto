@@ -1,12 +1,12 @@
 #include "dce_common.h"
 #include "dce_utils.h"
 
-int dce_ishex(char c)
+int SECTION_ATTR dce_ishex(char c)
 {
     return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');
 }
 
-char dce_htoi(char c)
+char SECTION_ATTR dce_htoi(char c)
 {
     if (c >= '0' && c <= '9')
         return c - '0';
@@ -15,7 +15,7 @@ char dce_htoi(char c)
     return -1;
 }
 
-int dce_expect_number(const char** buf, size_t *psize, int def_val)
+int SECTION_ATTR dce_expect_number(const char** buf, size_t *psize, int def_val)
 {
     size_t s = *psize;
     if (s == 0)
@@ -40,7 +40,7 @@ int dce_expect_number(const char** buf, size_t *psize, int def_val)
     return result;
 }
 
-void dce_itoa(int val, char* buf, size_t bufsize, size_t* outsize)
+void SECTION_ATTR dce_itoa(int val, char* buf, size_t bufsize, size_t* outsize)
 {
     char negative = 0;
     if (val == 0)
@@ -80,7 +80,7 @@ void dce_itoa(int val, char* buf, size_t bufsize, size_t* outsize)
     *outsize = buf - start;
 }
 
-void dce_itoa_zeropad(int val, char* buf, size_t bufsize)
+void SECTION_ATTR dce_itoa_zeropad(int val, char* buf, size_t bufsize)
 {
     int digits[10];
     int i;

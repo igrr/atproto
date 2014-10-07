@@ -41,7 +41,7 @@ static const char* dce_result_code_v1[] = {
 };
 
 
-dce_t* dce_init(size_t rx_buffer_size)
+dce_t* SECTION_ATTR dce_init(size_t rx_buffer_size)
 {
     dce_t* ctx = (dce_t*) malloc(sizeof(dce_t));
     
@@ -57,7 +57,7 @@ dce_t* dce_init(size_t rx_buffer_size)
     return ctx;
 }
 
-void dce_init_defaults(dce_t* ctx)
+void SECTION_ATTR dce_init_defaults(dce_t* ctx)
 {
     ctx->cr              = 13;
     ctx->lf              = 10;
@@ -68,7 +68,7 @@ void dce_init_defaults(dce_t* ctx)
 }
 
 
-void dce_register_command_group(dce_t* ctx, const char* leadin, const command_desc_t* desc, int ndesc, void* group_ctx)
+void SECTION_ATTR dce_register_command_group(dce_t* ctx, const char* leadin, const command_desc_t* desc, int ndesc, void* group_ctx)
 {
     if (ctx->command_groups_count == DCE_MAX_COMMAND_GROUPS)
     {
@@ -119,7 +119,7 @@ dce_result_t dce_process_escape(dce_t* ctx, char* pc)
 }
 #endif
 
-void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
+void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
 {
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
@@ -142,7 +142,7 @@ void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
     }
 }
 
-void dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc)
+void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc)
 {
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
@@ -178,7 +178,7 @@ void dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_nam
     user_dce_transmit(crlf, 2);
 }
 
-void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size)
+void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size)
 {
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
@@ -193,7 +193,7 @@ void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size
     user_dce_transmit(crlf, 2);
 }
 
-void dce_emit_information_response(dce_t* dce, const char* response, size_t size)
+void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response, size_t size)
 {
     const char crlf[] = {dce->cr, dce->lf};
     if (dce->response_fmt == 1)
@@ -206,7 +206,7 @@ void dce_emit_information_response(dce_t* dce, const char* response, size_t size
     user_dce_transmit(crlf, 2);
 }
 
-dce_result_t dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
+dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
 {
     // we'll be parsing arguments in place
     char* buf = (char*) cbuf; //it actually is a modifiable rx buffer, so TODO: remove const everywhere up the call chain
@@ -262,7 +262,7 @@ dce_result_t dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t*
     return DCE_OK;
 }
 
-dce_result_code_t dce_process_args_run_command(dce_t* ctx, const command_group_t* group, const command_desc_t* command, const char* buf, size_t size)
+dce_result_code_t SECTION_ATTR dce_process_args_run_command(dce_t* ctx, const command_group_t* group, const command_desc_t* command, const char* buf, size_t size)
 {
     int flags = command->flags;
     if (size == 0)    // 5.4.3.1 Action execution, no arguments
@@ -315,7 +315,7 @@ dce_result_code_t dce_process_args_run_command(dce_t* ctx, const command_group_t
     return DCE_OK;
 }
 
-dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, size_t size)
+dce_result_t SECTION_ATTR dce_process_extended_format_command(dce_t* ctx, const char* buf, size_t size)
 {
     for (int igrp = 0; igrp < ctx->command_groups_count; ++igrp)
     {
@@ -345,7 +345,7 @@ dce_result_t dce_process_extended_format_command(dce_t* ctx, const char* buf, si
 }
 
 
-dce_result_t dce_process_command_line(dce_t* ctx)
+dce_result_t SECTION_ATTR dce_process_command_line(dce_t* ctx)
 {
     // 5.2.1 command line format
     size_t size = ctx->rx_buffer_pos;
@@ -388,7 +388,7 @@ dce_result_t dce_process_command_line(dce_t* ctx)
 }
 
 
-dce_result_t dce_handle_command_state_input(dce_t* ctx, const char* cmd, size_t size)
+dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char* cmd, size_t size)
 {
     if (ctx->rx_buffer_pos + size > ctx->rx_buffer_size)
     {
@@ -423,12 +423,12 @@ dce_result_t dce_handle_command_state_input(dce_t* ctx, const char* cmd, size_t 
     return DCE_OK;
 }
 
-dce_result_t dce_handle_data_state_input(dce_t* ctx, const char* cmd, size_t size)
+dce_result_t SECTION_ATTR dce_handle_data_state_input(dce_t* ctx, const char* cmd, size_t size)
 {
     return DCE_OK;
 }
 
-dce_result_t dce_handle_input(dce_t* ctx, const char* cmd, size_t size)
+dce_result_t SECTION_ATTR dce_handle_input(dce_t* ctx, const char* cmd, size_t size)
 {
     if (IS_COMMAND_STATE(ctx->state))
     {
@@ -440,7 +440,7 @@ dce_result_t dce_handle_input(dce_t* ctx, const char* cmd, size_t size)
     }
 }
 
-void dce_uninit(dce_t* ctx)
+void SECTION_ATTR dce_uninit(dce_t* ctx)
 {
     free(ctx->rx_buffer);
     free(ctx);

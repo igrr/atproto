@@ -4,11 +4,16 @@
 
 #if defined(ESP_PLATFORM)
 
+#define malloc os_malloc
+#define free os_free
+#define SECTION_ATTR __attribute__((section(".irom0.text")))
 #else
+
+#define SECTION_ATTR
+#endif
 
 #include <stdint.h>
 #include <string.h>
-#endif
 
 
 #endif//__DCE_COMMON_H
