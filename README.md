@@ -15,13 +15,14 @@ What works so far:
   - V0 and V1 response formatting
   - Echo
   - Result code suppression
- 
+  - Baud rate command (AT+IPR)
+  - Reset (ATZ)
+
 Next up:
-  - Baud rate command (+IPR)
-  - Add hooks into ESP platform (see user_dce_transmit, user_dce_reset...)
+  - Save baud rate to nvram
   - Transitions between data mode and command mode
-  - More unit tests
   - Implement all the IP and WiFi related commands for ESP
+  - More unit tests
   - Handling of malformed input (besides returning ERROR)
   - DTE part of the business
 
