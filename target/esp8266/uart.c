@@ -42,6 +42,12 @@ void ICACHE_FLASH_ATTR uart0_wait_for_tx_fifo(size_t size_needed)
             break;
     }
 }
+
+void ICACHE_FLASH_ATTR uart0_wait_for_transmit()
+{
+    uart0_wait_for_tx_fifo(UART_TX_FIFO_SIZE);
+}
+
 void ICACHE_FLASH_ATTR uart0_transmit_char(char c)
 {
     WRITE_PERI_REG(UART_FIFO(0), c);

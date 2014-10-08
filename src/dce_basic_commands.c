@@ -106,6 +106,10 @@ dce_result_t SECTION_ATTR dce_process_basic_command(dce_t* ctx, const char* buf,
         int val = dce_expect_number(&buf, &size, 0);
         return dce_handle_ATF(ctx, val);
     }
+    if (c == '~')
+    {
+        DCE_FAIL("assert test");
+    }
     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
     return DCE_OK;
 }

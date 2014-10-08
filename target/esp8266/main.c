@@ -47,8 +47,11 @@ void ICACHE_FLASH_ATTR target_dce_reset()
 
 void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
 {
+	uart0_transmit("\r\n########\r\n", 12);
     uart0_transmit(message, os_strlen(message));
-    while(true){}	// wait to be reset by the watchdog
+    uart0_transmit("\r\n########\r\n", 12);
+    uart0_wait_for_transmit();
+    system_restart();
 }
 
 void ICACHE_FLASH_ATTR user_init(void)
