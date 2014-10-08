@@ -8,7 +8,6 @@ bool g_reset = false;
 
 extern "C" {
 #include "dce.h"
-#include "dce_info_commands.h"
 #include "dce_test_commands.h"
 #include "dce_target.h"
 
@@ -35,16 +34,6 @@ void target_dce_request_process_command_line(dce_t* dce)
 }
 
 #define DCE_HANDLE_INPUT_STR(dce, str) dce_handle_input(dce, str, sizeof(str) - 1)
-
-TEST_CASE("call extended format commands", "[dce]")
-{
-    dce_t* dce = dce_init(1024);
-    dce_register_info_commands(dce);
-    g_tx_data.clear();
-    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+GMI\r") == DCE_OK );
-    dce_uninit(dce);
-    REQUIRE( g_tx_data == "AT+GMI\r\r\nERROR\r\n" );
-}
 
 TEST_CASE("set echo s-parameter", "[dce]")
 {

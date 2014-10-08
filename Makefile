@@ -9,7 +9,7 @@ CPPFLAGS+=-Iinclude -Isrc/include
 COMMON_OBJ_FILES := dce.o \
 					dce_basic_commands.o \
 					dce_utils.o \
-					dce_info_commands.o
+					
 
 COMMON_OBJ_PATHS := $(addprefix $(SRC_DIR)/,$(COMMON_OBJ_FILES))
 

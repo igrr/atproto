@@ -1,32 +1,32 @@
 #include "dce_commands.h"
-#include "dce_info_commands.h"
-
-dce_result_t SECTION_ATTR dce_handle_GMI(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
-{
-    dce_emit_basic_result_code(dce, DCE_RC_ERROR);
-    return DCE_OK;
-}
+#include "info_commands.h"
+#include "user_interface.h"
 
 dce_result_t SECTION_ATTR dce_handle_GMM(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
-    dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+    dce_emit_information_response(dce, "Chip: ESP8266EX\r\nFirmware: https://github.com/igrr/atproto", -1);
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 
 dce_result_t SECTION_ATTR dce_handle_GMR(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
-    dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+    dce_emit_information_response(dce, VERSION_STRING, -1);
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 
 dce_result_t SECTION_ATTR dce_handle_GSN(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
-    dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+    uint32_t chip_id = system_get_chip_id();
+    char buf[10];
+    os_sprintf(buf, "%08x", chip_id);
+    dce_emit_information_response(dce, buf, -1);
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 
 static const command_desc_t commands[] = {
-    {"GMI", &dce_handle_GMI, DCE_EXEC },
     {"GMM", &dce_handle_GMM, DCE_EXEC },
     {"GMR", &dce_handle_GMR, DCE_EXEC },
     {"GSN", &dce_handle_GSN, DCE_EXEC },

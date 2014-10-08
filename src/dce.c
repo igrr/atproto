@@ -10,7 +10,6 @@
 #include "dce_private.h"
 #include "dce_utils.h"
 #include "dce_basic_commands.h"
-#include "dce_info_commands.h"
 #include "dce_target.h"
 
 #define AT_ESCAPE '\\'

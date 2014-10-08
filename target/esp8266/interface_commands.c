@@ -3,8 +3,7 @@
 #include "dce_utils.h"
 #include "dce_private.h"
 #include "interface_commands.h"
-
-
+#include "config_store.h"
 
 dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
@@ -56,8 +55,13 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
         {
             if (requested_rate == valid_baudrates[i])
             {
+                config_t* config = config_get();
+                config->baud_rate = requested_rate;
+                config_save();
+                
                 dce_emit_basic_result_code(dce, DCE_RC_OK);
                 uart0_wait_for_transmit(uart);
+                
                 uart0_set_baudrate(uart, requested_rate);
                 return DCE_OK;
             }

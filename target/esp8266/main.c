@@ -6,15 +6,16 @@
 
 #include "uart.h"
 #include "dce.h"
-#include "dce_info_commands.h"
 #include "interface_commands.h"
-
+#include "config_store.h"
+#include "info_commands.h"
 
 #define COMMAND_TASK_PRIORITY 0
 #define COMMAND_QUEUE_SIZE    1
 
-uart_t* uart0;
-dce_t* dce;
+static uart_t* uart0;
+static dce_t* dce;
+static config_t* config;
 
 os_event_t command_queue[COMMAND_QUEUE_SIZE];
 
@@ -57,11 +58,27 @@ void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
     system_restart();
 }
 
+void ICACHE_FLASH_ATTR config_init(void)
+{
+    config = config_get();
+    if (config->magic != CONFIG_MAGIC || config->version != CONFIG_VERSION)
+    {
+        // initialize default configuration
+        os_printf("\r\nSetting default configuration.\r\n");
+        config->magic = CONFIG_MAGIC;
+        config->version = CONFIG_VERSION;
+        config->baud_rate = 9600;
+        config_save();
+    }
+}
+
 void ICACHE_FLASH_ATTR user_init(void)
 {
+    config_init();
 	dce = dce_init(256);
-    uart0 = uart0_init(115200, &rx_dce_cb);
+    uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
     dce_register_interface_commands(dce, uart0);
+    dce_register_info_commands(dce);
     uart_disable_debug();
     system_os_task( command_task,
     				COMMAND_TASK_PRIORITY,

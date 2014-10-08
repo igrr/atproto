@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32119DC812100E94BBC /* dce_basic_commands.c */; };
-		A1EEC32819DC812100E94BBC /* dce_info_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32219DC812100E94BBC /* dce_info_commands.c */; };
 		A1EEC32A19DC812100E94BBC /* dce.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32419DC812100E94BBC /* dce.c */; };
 		A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32619DC812100E94BBC /* dce_utils.c */; };
 		A1EEC33619DC82BA00E94BBC /* dce_test in Copy binary */ = {isa = PBXBuildFile; fileRef = A1EEC31319DC7FCF00E94BBC /* dce_test */; };
@@ -38,12 +37,14 @@
 		A155471C19E470FF00E6425A /* dce_target.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce_target.h; path = include/dce_target.h; sourceTree = "<group>"; };
 		A155471D19E5409E00E6425A /* interface_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = interface_commands.c; path = target/esp8266/interface_commands.c; sourceTree = "<group>"; };
 		A155471E19E5409E00E6425A /* interface_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interface_commands.h; path = target/esp8266/interface_commands.h; sourceTree = "<group>"; };
+		A155472219E5701000E6425A /* config_store.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = config_store.h; path = target/esp8266/config_store.h; sourceTree = "<group>"; };
+		A155472319E5715A00E6425A /* config_store.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config_store.c; path = target/esp8266/config_store.c; sourceTree = "<group>"; };
+		A155472519E57C4200E6425A /* info_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = info_commands.c; path = target/esp8266/info_commands.c; sourceTree = "<group>"; };
+		A155472619E57C4200E6425A /* info_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info_commands.h; path = target/esp8266/info_commands.h; sourceTree = "<group>"; };
 		A1EEC31319DC7FCF00E94BBC /* dce_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dce_test; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1EEC32119DC812100E94BBC /* dce_basic_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_basic_commands.c; path = src/dce_basic_commands.c; sourceTree = "<group>"; };
-		A1EEC32219DC812100E94BBC /* dce_info_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_info_commands.c; path = src/dce_info_commands.c; sourceTree = "<group>"; };
 		A1EEC32419DC812100E94BBC /* dce.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce.c; path = src/dce.c; sourceTree = "<group>"; };
 		A1EEC32619DC812100E94BBC /* dce_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_utils.c; path = src/dce_utils.c; sourceTree = "<group>"; };
-		A1EEC33219DC814C00E94BBC /* dce_info_commands.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce_info_commands.h; path = include/dce_info_commands.h; sourceTree = "<group>"; };
 		A1EEC33319DC814C00E94BBC /* dce.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce.h; path = include/dce.h; sourceTree = "<group>"; };
 		A1EEC33419DC814C00E94BBC /* dce_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce_common.h; path = include/dce_common.h; sourceTree = "<group>"; };
 		A1EEC33519DC814C00E94BBC /* catch.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = catch.hpp; path = include/catch.hpp; sourceTree = "<group>"; };
@@ -71,11 +72,15 @@
 		A13BCD1C19E3B82300C12FFB /* esp8266 */ = {
 			isa = PBXGroup;
 			children = (
+				A155472519E57C4200E6425A /* info_commands.c */,
+				A155472619E57C4200E6425A /* info_commands.h */,
 				A155471D19E5409E00E6425A /* interface_commands.c */,
 				A155471E19E5409E00E6425A /* interface_commands.h */,
 				A13BCD1D19E3B83200C12FFB /* uart.c */,
 				A13BCD1E19E3B83200C12FFB /* main.c */,
 				A13BCD2119E3CDFD00C12FFB /* uart.h */,
+				A155472219E5701000E6425A /* config_store.h */,
+				A155472319E5715A00E6425A /* config_store.c */,
 			);
 			name = esp8266;
 			sourceTree = "<group>";
@@ -105,8 +110,6 @@
 				A1EEC38219DD7FA300E94BBC /* dce_basic_commands.h */,
 				A1EEC38019DD7FA300E94BBC /* dce_commands.h */,
 				A1EEC33419DC814C00E94BBC /* dce_common.h */,
-				A1EEC32219DC812100E94BBC /* dce_info_commands.c */,
-				A1EEC33219DC814C00E94BBC /* dce_info_commands.h */,
 				A1EEC38119DD7FA300E94BBC /* dce_private.h */,
 				A1EEC32619DC812100E94BBC /* dce_utils.c */,
 				A1EEC38319DD7FA300E94BBC /* dce_utils.h */,
@@ -214,7 +217,6 @@
 				A1EEC37F19DD7F7B00E94BBC /* tests.cpp in Sources */,
 				A1EEC37E19DD7F7B00E94BBC /* dce_test_commands.c in Sources */,
 				A1EEC37D19DD7F7B00E94BBC /* test_dce_utils.cpp in Sources */,
-				A1EEC32819DC812100E94BBC /* dce_info_commands.c in Sources */,
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
 				A1EEC32A19DC812100E94BBC /* dce.c in Sources */,
 				A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */,

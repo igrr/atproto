@@ -1,6 +1,7 @@
 #ifndef __DCE_COMMON_H
 #define __DCE_COMMON_H
 
+#define VERSION_STRING "0.1"
 
 #if defined(ESP_PLATFORM)
 #include "ets_sys.h"
