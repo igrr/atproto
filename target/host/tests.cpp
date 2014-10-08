@@ -10,20 +10,26 @@ extern "C" {
 #include "dce.h"
 #include "dce_info_commands.h"
 #include "dce_test_commands.h"
+#include "dce_target.h"
 
-void user_dce_transmit(const char* data, size_t size)
+void target_dce_transmit(const char* data, size_t size)
 {
     g_tx_data += std::string(data, size);
 }
 
-void user_dce_reset()
+void target_dce_reset()
 {
     g_reset = true;
 }
     
-void user_dce_assert(const char* msg)
+void target_dce_assert(const char* msg)
 {
     throw std::runtime_error(msg);
+}
+    
+void target_dce_request_process_command_line(dce_t* dce)
+{
+    dce_process_command_line(dce);
 }
 
 }

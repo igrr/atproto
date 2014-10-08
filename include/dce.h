@@ -32,9 +32,4 @@ void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size
 
 void dce_uninit(dce_t* dce);
 
-
-extern void user_dce_transmit(const char* data, size_t size);
-extern void user_dce_reset();
-extern void user_dce_assert(const char* message);
-
 #endif //__DCE_H

@@ -2,11 +2,12 @@
 #include "dce_commands.h"
 #include "dce_private.h"
 #include "dce_utils.h"
+#include "dce_target.h"
 
 inline static dce_result_t SECTION_ATTR dce_handle_ATZ(dce_t* ctx, int val)
 {
     // use ATZ as reset
-    user_dce_reset();
+    target_dce_reset();
     return DCE_OK;
 }
 

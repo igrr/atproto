@@ -19,6 +19,7 @@
 #include "dce_utils.h"
 #include "dce_basic_commands.h"
 #include "dce_info_commands.h"
+#include "dce_target.h"
 
 #define AT_ESCAPE '\\'
 #define DCE_CONTINUE -1
@@ -49,8 +50,13 @@ dce_t* SECTION_ATTR dce_init(size_t rx_buffer_size)
     ctx->rx_buffer       = (char*) malloc(rx_buffer_size);
     ctx->rx_buffer_pos   = 0;
     
-    ctx->command_groups_count = 0;
-    ctx->state = COMMAND_STATE;
+    ctx->command_line_buf_size = rx_buffer_size;
+    ctx->command_line_buf      = (char*) malloc(rx_buffer_size);
+    ctx->command_line_length   = 0;
+    
+    ctx->command_groups_count  = 0;
+    ctx->state                 = COMMAND_STATE;
+    ctx->command_pending       = 0;
     
     dce_init_defaults(ctx);
     
@@ -83,44 +89,11 @@ void SECTION_ATTR dce_register_command_group(dce_t* ctx, const char* leadin, con
 
     ctx->command_groups_count++;
 }
-#if 0
-// substitute escape sequence character pointed to by pc with unescaped character
-// returns DCE_OK is character was consumed
-// returns DCE_CONTINUE if the character should be processed further
-dce_result_t dce_process_escape(dce_t* ctx, char* pc)
-{
-    if (ctx->escape == 0)
-    {
-        if (*pc != AT_ESCAPE)
-            return DCE_CONTINUE;
-        
-        ctx->escape = 1;
-        ctx->escape_char = 0;
-        return DCE_OK;
-    }
-
-    char h = dce_htoi(*pc);
-    if (h < 0)
-        return DCE_INVALID_INPUT;
-    
-    if (ctx->escape == 1)
-    {
-        // first hex character
-        ctx->escape_char |= (h << 8);
-        ctx->escape++;
-        return DCE_OK;
-    }
-    
-    // second hex character
-    ctx->escape_char |= h;
-    ctx->escape = 0;
-    *pc = ctx->escape_char;
-    return DCE_CONTINUE;
-}
-#endif
 
 void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
 {
+    dce->command_pending = 0;
+    
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
 
@@ -128,34 +101,36 @@ void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t resul
     {
         const char* text = dce_result_code_v0[result];
         size_t length = strlen(text);
-        user_dce_transmit(text, length);
-        user_dce_transmit(&dce->cr, 1);
+        target_dce_transmit(text, length);
+        target_dce_transmit(&dce->cr, 1);
     }
     else
     {
         const char crlf[] = {dce->cr, dce->lf};
-        user_dce_transmit(crlf, 2);
+        target_dce_transmit(crlf, 2);
         const char* text = dce_result_code_v1[result];
         size_t length = strlen(text);
-        user_dce_transmit(text, length);
-        user_dce_transmit(crlf, 2);
+        target_dce_transmit(text, length);
+        target_dce_transmit(crlf, 2);
     }
 }
 
 void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc)
 {
+    dce->command_pending = 0;
+    
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
     const char crlf[] = {dce->cr, dce->lf};
     if (dce->response_fmt == 1)
     {
-        user_dce_transmit(crlf, 2);
+        target_dce_transmit(crlf, 2);
     }
     if (size == -1)
         size = strlen(command_name);
-    user_dce_transmit("+", 1);
-    user_dce_transmit(command_name, size);
-    user_dce_transmit(":", 1);
+    target_dce_transmit("+", 1);
+    target_dce_transmit(command_name, size);
+    target_dce_transmit(":", 1);
     for (size_t iarg = 0; iarg < argc; ++iarg)
     {
         arg_t* arg = args + iarg;
@@ -163,34 +138,36 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
         {
             const char* str = arg->value.string;
             size_t str_size = strlen(str);
-            user_dce_transmit(str, str_size);
+            target_dce_transmit(str, str_size);
         }
         else if (arg->type == ARG_TYPE_NUMBER)
         {
             char buf[12];
             size_t str_size;
             dce_itoa(arg->value.number, buf, sizeof(buf), &str_size);
-            user_dce_transmit(buf, str_size);
+            target_dce_transmit(buf, str_size);
         }
         if (iarg != argc - 1)
-            user_dce_transmit(",", 1);
+            target_dce_transmit(",", 1);
     }
-    user_dce_transmit(crlf, 2);
+    target_dce_transmit(crlf, 2);
 }
 
 void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size)
 {
+    dce->command_pending = 0;
+    
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
     const char crlf[] = {dce->cr, dce->lf};
     if (dce->response_fmt == 1)
     {
-        user_dce_transmit(crlf, 2);
+        target_dce_transmit(crlf, 2);
     }
     if (size == -1)
         size = strlen(response);
-    user_dce_transmit(response, size);
-    user_dce_transmit(crlf, 2);
+    target_dce_transmit(response, size);
+    target_dce_transmit(crlf, 2);
 }
 
 void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response, size_t size)
@@ -198,12 +175,12 @@ void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response
     const char crlf[] = {dce->cr, dce->lf};
     if (dce->response_fmt == 1)
     {
-        user_dce_transmit(crlf, 2);
+        target_dce_transmit(crlf, 2);
     }
     if (size == -1)
         size = strlen(response);
-    user_dce_transmit(response, size);
-    user_dce_transmit(crlf, 2);
+    target_dce_transmit(response, size);
+    target_dce_transmit(crlf, 2);
 }
 
 dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
@@ -347,9 +324,11 @@ dce_result_t SECTION_ATTR dce_process_extended_format_command(dce_t* ctx, const 
 
 dce_result_t SECTION_ATTR dce_process_command_line(dce_t* ctx)
 {
+    ctx->command_pending = 1;
+    
     // 5.2.1 command line format
-    size_t size = ctx->rx_buffer_pos;
-    char *buf = ctx->rx_buffer;
+    size_t size = ctx->command_line_length;
+    char *buf = ctx->command_line_buf;
     
     if (size < 2)
     {
@@ -392,10 +371,8 @@ dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char*
 {
     if (ctx->rx_buffer_pos + size > ctx->rx_buffer_size)
     {
-        // FIXME: better handling of rx buffer overflow
-        // may actually need less space because of escaped characters
-        // TODO: send error response
-        return DCE_BUFFER_OVERFLOW;
+        dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+        ctx->rx_buffer_pos = 0;
     }
     
     // TODO: implement command line editing (5.2.2)
@@ -404,15 +381,25 @@ dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char*
         char c = cmd[i];
         if (ctx->echo)
         {
-            user_dce_transmit(&c, 1);
+            target_dce_transmit(&c, 1);
         }
         if (c == ctx->cr)
         {
-            dce_result_t rc = dce_process_command_line(ctx);
-            if (rc != DCE_OK)
-                return rc;
-            
-            ctx->rx_buffer_pos = 0;
+            if (ctx->command_pending)
+            {
+                // got another command before response has been sent
+                // ignore it since any error code may be interpreted as a return code
+                // for the original command
+                
+                ctx->rx_buffer_pos = 0;
+            }
+            else
+            {
+                memcpy(ctx->command_line_buf, ctx->rx_buffer, ctx->rx_buffer_pos);
+                ctx->command_line_length = ctx->rx_buffer_pos;
+                ctx->rx_buffer_pos = 0;
+                target_dce_request_process_command_line(ctx);
+            }
         }
         else
         {

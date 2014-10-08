@@ -2,6 +2,7 @@
 #define __DCE_PRIVATE_H
 
 #include "dce_commands.h"
+#include "dce_target.h"
 
 typedef enum {
     COMMAND_STATE = 1,
@@ -29,6 +30,10 @@ struct dce_
     char*   rx_buffer;
     size_t  rx_buffer_pos;
     
+    char*   command_line_buf;
+    size_t  command_line_buf_size;
+    size_t  command_line_length;
+    
     command_group_t command_groups[DCE_MAX_COMMAND_GROUPS];
     size_t  command_groups_count;
     
@@ -40,6 +45,8 @@ struct dce_
     char    echo;           /// 6.2.4 parameter E
     char    suppress_rc;    /// 6.2.5 parameter Q
     char    response_fmt;   /// 6.2.6 parameter V
+    
+    char    command_pending;
 };
 
 void dce_init_defaults(dce_t* dce);
@@ -47,6 +54,6 @@ void dce_init_defaults(dce_t* dce);
 #define S1(x) #x
 #define S2(x) S1(x)
 #define LOCATION __FILE__ "@" S2(__LINE__)
-#define DCE_FAIL(msg) user_dce_assert("Internal error in " LOCATION ": " msg)
+#define DCE_FAIL(msg) target_dce_assert("Internal error in " LOCATION ": " msg)
 
 #endif//__DCE_PRIVATE_H
