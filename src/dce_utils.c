@@ -97,3 +97,17 @@ void SECTION_ATTR dce_itoa_zeropad(int val, char* buf, size_t bufsize)
         *buf = '0' + digits[i - 1];
 }
 
+void SECTION_ATTR dce_strcpy(const char* str, char* buf, size_t bufsize, size_t* outsize)
+{
+    const char* start = buf;
+    for (;bufsize; --bufsize, ++buf, ++str)
+    {
+        char c = *str;
+        if (!c)
+            break;
+        *buf = c;
+    }
+    
+    *outsize = buf - start;
+}
+

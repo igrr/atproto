@@ -6,6 +6,9 @@
 
 #include "uart.h"
 #include "dce.h"
+#include "dce_info_commands.h"
+#include "interface_commands.h"
+
 
 #define COMMAND_TASK_PRIORITY 0
 #define COMMAND_QUEUE_SIZE    1
@@ -17,7 +20,7 @@ os_event_t command_queue[COMMAND_QUEUE_SIZE];
 
 void ICACHE_FLASH_ATTR uart_echo(char c)
 {
-	uart0_transmit_char(c);
+	uart0_transmit_char(uart0, c);
 }
 
 void ICACHE_FLASH_ATTR rx_dce_cb(char c)
@@ -37,7 +40,7 @@ void command_task(os_event_t *events)
 
 void ICACHE_FLASH_ATTR target_dce_transmit(const char* data, size_t size)
 {
-    uart0_transmit(data, size);
+    uart0_transmit(uart0, data, size);
 }
 
 void ICACHE_FLASH_ATTR target_dce_reset()
@@ -47,10 +50,10 @@ void ICACHE_FLASH_ATTR target_dce_reset()
 
 void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
 {
-	uart0_transmit("\r\n########\r\n", 12);
-    uart0_transmit(message, os_strlen(message));
-    uart0_transmit("\r\n########\r\n", 12);
-    uart0_wait_for_transmit();
+	uart0_transmit(uart0, "\r\n########\r\n", 12);
+    uart0_transmit(uart0, message, os_strlen(message));
+    uart0_transmit(uart0, "\r\n########\r\n", 12);
+    uart0_wait_for_transmit(uart0);
     system_restart();
 }
 
@@ -58,6 +61,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 {
 	dce = dce_init(256);
     uart0 = uart0_init(115200, &rx_dce_cb);
+    dce_register_interface_commands(dce, uart0);
     uart_disable_debug();
     system_os_task( command_task,
     				COMMAND_TASK_PRIORITY,

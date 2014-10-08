@@ -43,17 +43,17 @@ void ICACHE_FLASH_ATTR uart0_wait_for_tx_fifo(size_t size_needed)
     }
 }
 
-void ICACHE_FLASH_ATTR uart0_wait_for_transmit()
+void ICACHE_FLASH_ATTR uart0_wait_for_transmit(uart_t* uart)
 {
     uart0_wait_for_tx_fifo(UART_TX_FIFO_SIZE);
 }
 
-void ICACHE_FLASH_ATTR uart0_transmit_char(char c)
+void ICACHE_FLASH_ATTR uart0_transmit_char(uart_t* uart, char c)
 {
     WRITE_PERI_REG(UART_FIFO(0), c);
 }
 
-void ICACHE_FLASH_ATTR uart0_transmit(const char* buf, size_t size)
+void ICACHE_FLASH_ATTR uart0_transmit(uart_t* uart, const char* buf, size_t size)
 {
     while (size)
     {
@@ -86,16 +86,27 @@ void ICACHE_FLASH_ATTR uart0_interrupt_disable(uart_t* uart)
     ETS_UART_INTR_DISABLE();
 }
 
-uart_t* ICACHE_FLASH_ATTR uart0_init(int baud_rate, uart_rx_handler_t rx_handler)
+void ICACHE_FLASH_ATTR uart0_set_baudrate(uart_t* uart, int baud_rate)
+{
+    uart->baud_rate = baud_rate;
+    uart_div_modify(0, UART_CLK_FREQ / (uart->baud_rate));
+}
+
+int ICACHE_FLASH_ATTR uart0_get_baudrate(uart_t* uart)
+{
+    return uart->baud_rate;
+}
+
+uart_t* ICACHE_FLASH_ATTR uart0_init(int baudrate, uart_rx_handler_t rx_handler)
 {
     uart_t* uart = (uart_t*) os_malloc(sizeof(uart_t));
-    uart->baud_rate = baud_rate;
+
     uart->rx_handler = rx_handler;
 
     PIN_PULLUP_DIS(PERIPHS_IO_MUX_U0TXD_U);
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0TXD_U, FUNC_U0TXD);
 
-    uart_div_modify(0, UART_CLK_FREQ / (uart->baud_rate));  // baud rate
+    uart0_set_baudrate(uart, baudrate);
     WRITE_PERI_REG(UART_CONF0(0), 0x3 << UART_BIT_NUM_S);   // 8n1
 
     uart0_flush(uart);

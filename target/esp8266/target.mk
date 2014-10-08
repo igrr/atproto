@@ -1,5 +1,7 @@
 TARGET_OBJ_FILES := main.o \
-					uart.o
+					uart.o \
+					interface_commands.o \
+					
 
 TARGET_OBJ_PATHS := $(addprefix $(TARGET_DIR)/,$(TARGET_OBJ_FILES))
 

@@ -4,16 +4,8 @@
  */
 
 
-#if defined (ESP_PLATFORM)
-    #include "ets_sys.h"
-    #include "os_type.h"
-    #include "osapi.h"
-    #include "mem.h"
-#else
-    #include <stdint.h>
-    #include <stdlib.h>
-#endif
 
+#include "dce_common.h"
 #include "dce.h"
 #include "dce_private.h"
 #include "dce_utils.h"
