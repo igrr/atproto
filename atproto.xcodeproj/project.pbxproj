@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A155472A19E68D5800E6425A /* wifi_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A155472819E68D5800E6425A /* wifi_commands.c */; };
 		A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32119DC812100E94BBC /* dce_basic_commands.c */; };
 		A1EEC32A19DC812100E94BBC /* dce.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32419DC812100E94BBC /* dce.c */; };
 		A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32619DC812100E94BBC /* dce_utils.c */; };
@@ -41,6 +42,8 @@
 		A155472319E5715A00E6425A /* config_store.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config_store.c; path = target/esp8266/config_store.c; sourceTree = "<group>"; };
 		A155472519E57C4200E6425A /* info_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = info_commands.c; path = target/esp8266/info_commands.c; sourceTree = "<group>"; };
 		A155472619E57C4200E6425A /* info_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info_commands.h; path = target/esp8266/info_commands.h; sourceTree = "<group>"; };
+		A155472819E68D5800E6425A /* wifi_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wifi_commands.c; path = target/esp8266/wifi_commands.c; sourceTree = "<group>"; };
+		A155472919E68D5800E6425A /* wifi_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wifi_commands.h; path = target/esp8266/wifi_commands.h; sourceTree = "<group>"; };
 		A1EEC31319DC7FCF00E94BBC /* dce_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dce_test; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1EEC32119DC812100E94BBC /* dce_basic_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce_basic_commands.c; path = src/dce_basic_commands.c; sourceTree = "<group>"; };
 		A1EEC32419DC812100E94BBC /* dce.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dce.c; path = src/dce.c; sourceTree = "<group>"; };
@@ -81,6 +84,8 @@
 				A13BCD2119E3CDFD00C12FFB /* uart.h */,
 				A155472219E5701000E6425A /* config_store.h */,
 				A155472319E5715A00E6425A /* config_store.c */,
+				A155472819E68D5800E6425A /* wifi_commands.c */,
+				A155472919E68D5800E6425A /* wifi_commands.h */,
 			);
 			name = esp8266;
 			sourceTree = "<group>";
@@ -220,6 +225,7 @@
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
 				A1EEC32A19DC812100E94BBC /* dce.c in Sources */,
 				A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */,
+				A155472A19E68D5800E6425A /* wifi_commands.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

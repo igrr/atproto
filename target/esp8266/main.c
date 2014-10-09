@@ -9,6 +9,7 @@
 #include "interface_commands.h"
 #include "config_store.h"
 #include "info_commands.h"
+#include "wifi_commands.h"
 
 #define COMMAND_TASK_PRIORITY 0
 #define COMMAND_QUEUE_SIZE    1
@@ -79,6 +80,7 @@ void ICACHE_FLASH_ATTR user_init(void)
     uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
     dce_register_interface_commands(dce, uart0);
     dce_register_info_commands(dce);
+    dce_register_wifi_commands(dce);
     uart_set_debug(0);
     system_os_task( command_task,
                     COMMAND_TASK_PRIORITY,
