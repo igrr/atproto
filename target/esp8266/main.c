@@ -79,7 +79,7 @@ void ICACHE_FLASH_ATTR user_init(void)
     uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
     dce_register_interface_commands(dce, uart0);
     dce_register_info_commands(dce);
-    uart_disable_debug();
+    uart_set_debug(0);
     system_os_task( command_task,
                     COMMAND_TASK_PRIORITY,
                     command_queue,

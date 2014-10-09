@@ -4,6 +4,7 @@
 #include "mem.h"
 #include "driver/uart_register.h"
 #include "uart.h"
+#include "user_interface.h"
 
 #define UART_TX_FIFO_SIZE 0x7f
 
@@ -126,12 +127,31 @@ void ICACHE_FLASH_ATTR uart0_uninit(uart_t* uart)
 
 
 void ICACHE_FLASH_ATTR
-uart1_write_char(char c)
+uart_ignore_char(char c)
 {    
 }
 
-void ICACHE_FLASH_ATTR uart_disable_debug()
+void ICACHE_FLASH_ATTR
+uart_write_char(char c)
 {
-    ets_install_putc1((void *)&uart1_write_char);
+    if (c == '\n')
+        WRITE_PERI_REG(UART_FIFO(0), '\r');
+    
+    WRITE_PERI_REG(UART_FIFO(0), c);
+}
+
+int s_uart_debug_enabled = 1;
+void ICACHE_FLASH_ATTR uart_set_debug(int enabled)
+{
+    s_uart_debug_enabled = enabled;
+    if (enabled)
+        ets_install_putc1((void *)&uart_write_char);
+    else
+        ets_install_putc1((void *)&uart_ignore_char);
+}
+
+int ICACHE_FLASH_ATTR uart_get_debug()
+{
+    return s_uart_debug_enabled;
 }
 

@@ -16,6 +16,6 @@ void uart0_transmit(uart_t* uart, const char* buf, size_t size);    // may block
 void uart0_wait_for_transmit(uart_t* uart);
 void uart0_transmit_char(uart_t* uart, char c);  // does not block, but character will be lost if FIFO is full
 
-void uart_disable_debug();
-
+void uart_set_debug(int enabled);
+int  uart_get_debug();
 #endif//ESP8266_UART_H

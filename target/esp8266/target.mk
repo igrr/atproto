@@ -2,6 +2,7 @@ TARGET_OBJ_FILES := main.o \
 					uart.o \
 					interface_commands.o \
 					info_commands.o \
+					wifi_commands.o \
 					config_store.o \
 
 

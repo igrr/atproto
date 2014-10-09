@@ -5,6 +5,31 @@
 #include "interface_commands.h"
 #include "config_store.h"
 
+
+dce_result_t SECTION_ATTR dce_handle_IDBG(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind & DCE_READ)
+    {
+        arg_t result = {.type = ARG_TYPE_NUMBER, .value.number = uart_get_debug()};
+        dce_emit_extended_result_code_with_args(dce, "IDBG", -1, &result, 1);
+    }
+    else if (kind & DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+IDBG:(0,1)", -1);
+    }
+    else
+    {
+        if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER || argv[0].value.number > 1)
+        {
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+            return DCE_OK;
+        }
+        uart_set_debug(argv[0].value.number);
+        dce_emit_basic_result_code(dce, DCE_RC_OK);
+    }
+    return DCE_OK;
+}
+
 dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     static const int valid_baudrates[] = {9600, 19200, 38400, 57600, 74880, 115200, 230400, 460800, 921600};
@@ -73,6 +98,7 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
 
 static const command_desc_t commands[] = {
     {"IPR", &dce_handle_IPR, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"IDBG", &dce_handle_IDBG, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
