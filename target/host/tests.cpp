@@ -1,7 +1,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-
+#include <sstream>
 std::string g_tx_data;
 bool g_reset = false;
 
@@ -10,7 +10,8 @@ extern "C" {
 #include "dce.h"
 #include "dce_test_commands.h"
 #include "dce_target.h"
-
+#include "dce_private.h"
+    
 void target_dce_transmit(const char* data, size_t size)
 {
     g_tx_data += std::string(data, size);
@@ -73,6 +74,48 @@ TEST_CASE("parse extended format arguments", "[dce]")
     REQUIRE(std::string(args.param2) == "abcdef");
     REQUIRE(args.param3 == 42);
     REQUIRE(std::string(args.param4) == "a b c");
+    dce_uninit(dce);
+}
+
+TEST_CASE("argument count overflow handling", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE0\r") == DCE_OK);
+    g_tx_data.clear();
+    std::stringstream ss;
+    ss << "AT+TESTARGS=";
+    for (int i = 0; i < DCE_MAX_ARGS + 1; ++i)
+    {
+        ss << i + 1;
+        if (i < DCE_MAX_ARGS)
+            ss << ',';
+    }
+    ss << '\r';
+    std::string str = ss.str();
+    g_tx_data.clear();
+    REQUIRE(dce_handle_input(dce, str.c_str(), str.size()) == DCE_OK);
+    REQUIRE(g_tx_data == "\r\nERROR\r\n");
+    dce_uninit(dce);
+}
+
+
+TEST_CASE("rx overflow handling", "[dce]")
+{
+    dce_t* dce = dce_init(10);
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE3456789abcdef") == DCE_OK);
+    REQUIRE(g_tx_data == "ATE3456789\r\nERROR\r\nabcdef");
+    dce_uninit(dce);
+}
+
+TEST_CASE("command line editing", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE1\b\b\b\b\b" "ATS5=\b?\r") == DCE_OK);
+    REQUIRE(g_tx_data == "ATE1\b\b\b\b\bATS5=\b?\r\r\n008\r\n\r\nOK\r\n");
     dce_uninit(dce);
 }
 

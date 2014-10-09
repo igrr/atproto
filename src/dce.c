@@ -224,6 +224,11 @@ dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* 
         {
             return DCE_INVALID_INPUT;
         }
+        if (argc == DCE_MAX_ARGS)
+        {
+            // too many args
+            return DCE_INVALID_INPUT;
+        }
         args[argc++] = arg;
     }
     *pargc = argc;
@@ -360,16 +365,26 @@ dce_result_t SECTION_ATTR dce_process_command_line(dce_t* ctx)
 
 dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char* cmd, size_t size)
 {
-    if (ctx->rx_buffer_pos + size > ctx->rx_buffer_size)
-    {
-        dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
-        ctx->rx_buffer_pos = 0;
-    }
-    
-    // TODO: implement command line editing (5.2.2)
     for (size_t i = 0; i < size; ++i)
     {
         char c = cmd[i];
+        if (c == ctx->bs)       // command line editing (5.2.2)
+        {
+            if (ctx->rx_buffer_pos > 0)
+            {
+                --ctx->rx_buffer_pos;
+            }
+            if (ctx->echo)
+            {
+                target_dce_transmit(&c, 1);
+            }
+            continue;
+        }
+        if (ctx->rx_buffer_pos == ctx->rx_buffer_size)
+        {
+            dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+            ctx->rx_buffer_pos = 0;
+        }
         if (ctx->echo)
         {
             target_dce_transmit(&c, 1);
