@@ -27,6 +27,7 @@ void dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result);
 
 // use size=-1 for zero-terminated strings
 void dce_emit_information_response(dce_t* dce, const char* response, size_t size);
+void dce_continue_information_response(dce_t* dce, const char* response, size_t size);
 void dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size);
 
 

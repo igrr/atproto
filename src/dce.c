@@ -174,6 +174,16 @@ void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response
     target_dce_transmit(crlf, 2);
 }
 
+void dce_continue_information_response(dce_t* dce, const char* response, size_t size)
+{
+    const char crlf[] = {dce->cr, dce->lf};
+    if (size == -1)
+        size = strlen(response);
+    target_dce_transmit(response, size);
+    target_dce_transmit(crlf, 2);
+}
+
+
 dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
 {
     // we'll be parsing arguments in place
