@@ -6,7 +6,7 @@ BIN_DIR := bin
 
 CPPFLAGS+=-Iinclude -Isrc/include 
 CFLAGS += -std=c99
-CXXFLAGS += -std=c++11
+CXXFLAGS += -std=c++0x
 
 COMMON_OBJ_FILES := dce.o \
 					dce_basic_commands.o \
