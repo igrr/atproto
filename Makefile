@@ -5,6 +5,7 @@ OBJ_DIR := obj
 BIN_DIR := bin
 
 CPPFLAGS+=-Iinclude -Isrc/include 
+CFLAGS += -std=c99
 
 COMMON_OBJ_FILES := dce.o \
 					dce_basic_commands.o \
