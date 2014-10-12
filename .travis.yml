@@ -1,10 +1,10 @@
 language: cpp
 compiler:
-	- gcc
+    - gcc
 script: make test
 notifications:
-	recipients:
-		- igrokhotkov@gmail.com
-	email:
-		on_success: change
-		on_failure: always
+    email:
+        recipients:
+            - igrr@users.noreply.github.com
+        on_success: change
+        on_failure: always
