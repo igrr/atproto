@@ -1,0 +1,10 @@
+language: cpp
+compiler:
+	- gcc
+script: make test
+notifications:
+	recipients:
+		- igrokhotkov@gmail.com
+	email:
+		on_success: change
+		on_failure: always
