@@ -161,12 +161,26 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
     return DCE_OK;
 }
 
+dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    int mode = wifi_get_opmode();
+    if (mode != STATION_MODE && mode != STATIONAP_MODE)
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_RC_OK;
+    }
+    arg_t arg = {ARG_TYPE_NUMBER, .value.number=wifi_station_get_connect_status()};
+    dce_emit_extended_result_code_with_args(dce, "CWSTAT", -1, &arg, 1);
+    return DCE_OK;
+}
+
 
 static const command_desc_t commands[] = {
     {"CWMODE", &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWLAP", &wifi_handle_CWLAP, DCE_ACTION | DCE_EXEC },
     {"CWJAP", &wifi_handle_CWJAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWSAP", &wifi_handle_CWSAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"CWSTAT", &wifi_handle_CWSTAT, DCE_PARAM | DCE_READ },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
