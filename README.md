@@ -1,3 +1,5 @@
+[![Build status](http://img.shields.io/travis/igrr/atproto.svg)](https://travis-ci.org/igrr/atproto)
+
 AT protocol library
 ===================
 
@@ -14,10 +16,11 @@ What works so far:
   - Baud rate setting (AT+IPR) saved to flash
   - Reset (ATZ)
   - Chip id (AT+GSN) and version (AT+GMR) queries
+  - Wifi commands (CWLAP, CWJAP, CSWAP, CWSTAT)
 
 Next up:
   - Transitions between data mode and command mode
-  - Implement all the IP and WiFi related commands for ESP
+  - Implement all the IP related commands for ESP
   - MQTT?
   - More unit tests
   - Handling of malformed input (besides returning ERROR)
