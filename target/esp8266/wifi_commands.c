@@ -67,10 +67,52 @@ dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kin
     return DCE_OK;
 }
 
+dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CWJAP:\"ssid\",\"password\"", -1);
+    }
+    else if (kind == DCE_WRITE)
+    {
+        struct station_config conf;
+        if (argc != 2 ||
+            argv[0].type != ARG_TYPE_STRING ||
+            argv[1].type != ARG_TYPE_STRING ||
+            strlen(argv[0].value.string) >= sizeof(conf.ssid) - 1 ||
+            strlen(argv[1].value.string) >= sizeof(conf.password) - 1 )
+        {
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+            return DCE_RC_OK;
+        }
+        
+        strcpy(conf.ssid, argv[0].value.string);
+        strcpy(conf.password, argv[1].value.string);
+        wifi_station_set_config(&conf);
+        wifi_station_connect();
+        dce_emit_basic_result_code(dce, DCE_RC_OK);
+    }
+    else if (kind == DCE_READ)
+    {
+        struct station_config conf;
+        wifi_station_get_config(&conf);
+        const char* ssid = conf.ssid;
+        const char* pass = conf.password;
+        
+        arg_t args[] = {
+            {ARG_TYPE_STRING, .value.string = ssid},
+            {ARG_TYPE_STRING, .value.string = pass}
+        };
+        dce_emit_extended_result_code_with_args(dce, "CWJAP", -1, args, 2);
+    }
+    return DCE_OK;
+}
+
 
 static const command_desc_t commands[] = {
     {"CWMODE", &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWLAP", &wifi_handle_CWLAP, DCE_ACTION | DCE_EXEC },
+    {"CWJAP", &wifi_handle_CWJAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
