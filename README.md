@@ -35,6 +35,8 @@ Make
 - Run ```make all TARGET=esp8266```
 - The firmware will be generated in bin/0x00000.bin and bin/0x40000.bin
 
+Or just get [prebuilt binaries].
+
 ### Host
 - Run ```make test```
 
@@ -48,3 +50,5 @@ I use [Catch] for unit tests (it's in include/catch.hpp), see header for it's ow
 
 [Recommendation V.250]:https://www.itu.int/rec/T-REC-V.250-200307-I/en
 [Catch]:https://github.com/philsquared/Catch
+[prebuilt binaries]:http://th.igrr.me
+
