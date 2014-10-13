@@ -127,9 +127,12 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
         arg_t* arg = args + iarg;
         if (arg->type == ARG_TYPE_STRING)
         {
+            target_dce_transmit("\"", 1);
+            // TODO: escape any quotes in arg->value.string
             const char* str = arg->value.string;
             size_t str_size = strlen(str);
             target_dce_transmit(str, str_size);
+            target_dce_transmit("\"", 1);
         }
         else if (arg->type == ARG_TYPE_NUMBER)
         {

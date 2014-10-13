@@ -138,13 +138,20 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_RC_OK;
         }
+        wifi_softap_get_config(&conf);
         strcpy(conf.ssid, argv[0].value.string);
         strcpy(conf.password, argv[1].value.string);
         conf.channel = argv[2].value.number;
         conf.authmode = argv[3].value.number;
-        conf.ssid_hidden = 0;
-        conf.max_connection = 255;
+        
+        if (conf.channel > 13 ||
+            conf.authmode > AUTH_WPA_WPA2_PSK)
+        {
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+            return DCE_OK;
+        }
         wifi_softap_set_config(&conf);
+        dce_emit_basic_result_code(dce, DCE_RC_OK);
     }
     else
     {
