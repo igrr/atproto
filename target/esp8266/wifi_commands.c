@@ -4,6 +4,16 @@
 #include "config_store.h"
 #include "user_interface.h"
 
+#define CONNECTION_MONITORING_INTERVAL_MS 100
+#define ONCE 0
+#define REPEAT 1
+
+typedef struct {
+    dce_t* dce;
+    os_timer_t connection_monitor_timer;
+    int last_connection_status;
+} wifi_ctx_t;
+
 dce_result_t SECTION_ATTR wifi_handle_CWMODE(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     if (kind == DCE_TEST)
@@ -30,15 +40,14 @@ dce_result_t SECTION_ATTR wifi_handle_CWMODE(dce_t* dce, void* group_ctx, int ki
 }
 
 typedef struct {
-    dce_t* dce;
-    void*  group_ctx;
+    wifi_ctx_t* wifi_ctx;
 } wifi_scan_context_t;
 
 static wifi_scan_context_t s_wifi_scan_context;
 
 void SECTION_ATTR wifi_handle_CWLAP_scan_complete(void* result, STATUS status)
 {
-    dce_t* dce = s_wifi_scan_context.dce;
+    dce_t* dce = s_wifi_scan_context.wifi_ctx->dce;
     
     if (status != OK)
     {
@@ -60,8 +69,7 @@ void SECTION_ATTR wifi_handle_CWLAP_scan_complete(void* result, STATUS status)
 
 dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
-    s_wifi_scan_context.dce = dce;
-    s_wifi_scan_context.group_ctx = group_ctx;
+    s_wifi_scan_context.wifi_ctx = (wifi_ctx_t*) group_ctx;
     
     wifi_station_scan(&wifi_handle_CWLAP_scan_complete);
     return DCE_OK;
@@ -181,6 +189,32 @@ dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int ki
     return DCE_OK;
 }
 
+void wifi_connection_monitor_cb(void* arg)
+{
+    wifi_ctx_t* ctx = (wifi_ctx_t*) arg;
+    int mode = wifi_get_opmode();
+    if (mode != STATION_MODE && mode != STATIONAP_MODE)
+        return;
+    
+    int status = wifi_station_get_connect_status();
+    if (status != ctx->last_connection_status)
+    {
+        ctx->last_connection_status = status;
+        arg_t arg = { ARG_TYPE_NUMBER, .value.number=status };
+        dce_emit_extended_result_code_with_args(ctx->dce, "CWSTAT", -1, &arg, 1);
+    }
+}
+
+void wifi_start_connection_monitor(wifi_ctx_t* wifi_ctx)
+{
+    os_timer_setfn(&wifi_ctx->connection_monitor_timer, (os_timer_func_t*) &wifi_connection_monitor_cb, wifi_ctx);
+    os_timer_arm(&wifi_ctx->connection_monitor_timer, CONNECTION_MONITORING_INTERVAL_MS, REPEAT);
+}
+
+void wifi_stop_connection_monitor(wifi_ctx_t* wifi_ctx)
+{
+    os_timer_disarm(&wifi_ctx->connection_monitor_timer);
+}
 
 static const command_desc_t commands[] = {
     {"CWMODE", &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
@@ -194,5 +228,9 @@ static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
 
 void SECTION_ATTR dce_register_wifi_commands(dce_t* dce)
 {
-    dce_register_command_group(dce, "CW", commands, ncommands, 0);
+    static wifi_ctx_t wifi_ctx;
+    wifi_ctx.last_connection_status = STATION_IDLE;
+    wifi_ctx.dce = dce;
+    dce_register_command_group(dce, "CW", commands, ncommands, &wifi_ctx);
+    wifi_start_connection_monitor(&wifi_ctx);
 }
