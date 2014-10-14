@@ -16,7 +16,7 @@ What works so far:
   - Baud rate setting (AT+IPR) saved to flash
   - Reset (ATZ)
   - Chip id (AT+GSN) and version (AT+GMR) queries
-  - Wifi commands (CWLAP, CWJAP, CWSAP, CWSTAT)
+  - Wifi commands (CWLAP, CWJAP, CWSAP, CWSTAT, CWLIF)
   - Wifi connection status reports (+CWSTAT:)
 
 Next up:
