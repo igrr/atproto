@@ -76,8 +76,22 @@ void SECTION_ATTR wifi_handle_CWLAP_scan_complete(void* result, STATUS status)
 
 dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
+    int mode = wifi_get_opmode();
+    if (mode != STATION_MODE && mode != STATIONAP_MODE)
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_RC_OK;
+    }
+    int status = wifi_station_get_connect_status();
+    if (status != STATION_GOT_IP)
+    {
+        struct station_config conf;
+        *conf.ssid = 0;
+        *conf.password = 0;
+        wifi_station_set_config(&conf);
+        wifi_station_disconnect();
+    }
     s_wifi_scan_context.wifi_ctx = (wifi_ctx_t*) group_ctx;
-    
     wifi_station_scan(&wifi_handle_CWLAP_scan_complete);
     return DCE_OK;
 }
@@ -126,6 +140,25 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
     }
     return DCE_OK;
 }
+
+
+dce_result_t SECTION_ATTR wifi_handle_CWQAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    int mode = wifi_get_opmode();
+    if (mode != STATION_MODE && mode != STATIONAP_MODE)
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_RC_OK;
+    }
+    struct station_config conf;
+    *conf.ssid = 0;
+    *conf.password = 0;
+    wifi_station_set_config(&conf);
+    wifi_station_disconnect();
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
+    return DCE_OK;
+}
+
 
 dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
@@ -249,6 +282,7 @@ static const command_desc_t commands[] = {
     {"CWMODE", &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWLAP", &wifi_handle_CWLAP, DCE_ACTION | DCE_EXEC },
     {"CWJAP", &wifi_handle_CWJAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"CWQAP", &wifi_handle_CWQAP, DCE_ACTION | DCE_EXEC },
     {"CWSAP", &wifi_handle_CWSAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWSTAT", &wifi_handle_CWSTAT, DCE_PARAM | DCE_READ },
     {"CWLIF", &wifi_handle_CWLIF, DCE_ACTION | DCE_EXEC },
