@@ -85,9 +85,10 @@ void ICACHE_FLASH_ATTR user_init(void)
     config_init();
     dce = dce_init(256);
     uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
+    dce_register_ip_commands(dce);
+    dce_register_wifi_commands(dce);
     dce_register_interface_commands(dce, uart0);
     dce_register_info_commands(dce);
-    dce_register_wifi_commands(dce);
     uart_set_debug(0);
     system_os_task( command_task,
                     COMMAND_TASK_PRIORITY,
