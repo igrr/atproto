@@ -45,7 +45,7 @@ Or just get [prebuilt binaries].
 License
 -------
 
-BSD.
+BSD. See the LICENSE file.
 
 I use [Catch] for unit tests (it's in include/catch.hpp), see header for it's own license.
 
