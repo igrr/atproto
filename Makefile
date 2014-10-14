@@ -4,7 +4,9 @@ SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
 
-CPPFLAGS+=-Iinclude -Isrc/include 
+GIT_REV := $(shell git rev-parse --short HEAD)
+
+CPPFLAGS+=-Iinclude -Isrc/include -DREVISION_STRING=\"$(GIT_REV)\"
 CFLAGS += -std=c99
 CXXFLAGS += -std=c++0x
 

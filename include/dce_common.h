@@ -10,6 +10,10 @@
 
 #define VERSION_STRING "0.1"
 
+#ifndef REVISION_STRING
+#define REVISION_STRING "?"
+#endif
+
 #if defined(ESP_PLATFORM)
 #include "ets_sys.h"
 #include "os_type.h"
