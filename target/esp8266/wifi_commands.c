@@ -189,6 +189,28 @@ dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int ki
     return DCE_OK;
 }
 
+dce_result_t SECTION_ATTR wifi_handle_CWLIF(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    wifi_ctx_t* ctx = (wifi_ctx_t*) group_ctx;
+    struct station_info * station = wifi_softap_get_station_info();
+    while (station)
+    {
+        char buf[128];
+        uint8_t* ip = (uint8_t*) &(station->ip.addr);
+        uint8_t* mac = station->bssid;
+        
+        size_t len = os_sprintf(buf, "%d.%d.%d.%d,%02x:%02x:%02x:%02x:%02x:%02x",
+                                (uint32_t) ip[0], (uint32_t) ip[1], (uint32_t) ip[2], (uint32_t) ip[3],
+                                (uint32_t) mac[0], (uint32_t) mac[1],
+                                (uint32_t) mac[2], (uint32_t) mac[3],
+                                (uint32_t) mac[4], (uint32_t) mac[5]);
+        dce_emit_information_response(dce, buf, len);
+        station = STAILQ_NEXT(station, next);
+    }
+    wifi_softap_free_station_info();
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
+}
+
 void wifi_connection_monitor_cb(void* arg)
 {
     wifi_ctx_t* ctx = (wifi_ctx_t*) arg;
@@ -222,6 +244,7 @@ static const command_desc_t commands[] = {
     {"CWJAP", &wifi_handle_CWJAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWSAP", &wifi_handle_CWSAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     {"CWSTAT", &wifi_handle_CWSTAT, DCE_PARAM | DCE_READ },
+    {"CWLIF", &wifi_handle_CWLIF, DCE_ACTION | DCE_EXEC },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
