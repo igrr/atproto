@@ -31,7 +31,7 @@ void SECTION_ATTR ip_print_interface_ip(dce_t* dce, int interface, const char* c
     char buf[32];
     sprintf_ip(buf, ip.ip.addr);
     arg_t arg = { ARG_TYPE_STRING, .value.string=buf };
-    dce_emit_extended_result_code_with_args(dce, cmdname, -1, &arg, 1);
+    dce_emit_extended_result_code_with_args(dce, cmdname, -1, &arg, 1, 1);
 }
 
 dce_result_t SECTION_ATTR ip_handle_CIPSTA(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
@@ -70,7 +70,7 @@ void SECTION_ATTR ip_resolve_callback(const char *name, ip_addr_t *ipaddr, void 
     char buf[32];
     sprintf_ip(buf, ipaddr->addr);
     arg_t arg = { ARG_TYPE_STRING, .value.string=buf };
-    dce_emit_extended_result_code_with_args(dce, "CIPRESOLVE", -1, &arg, 1);
+    dce_emit_extended_result_code_with_args(dce, "CIPRESOLVE", -1, &arg, 1, 1);
 }
 
 dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)

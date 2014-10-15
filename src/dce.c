@@ -106,9 +106,10 @@ void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t resul
     }
 }
 
-void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc)
+void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc, int reset_command_pending)
 {
-    dce->command_pending = 0;
+    if (reset_command_pending)
+        dce->command_pending = 0;
     
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
@@ -147,9 +148,10 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
     target_dce_transmit(crlf, 2);
 }
 
-void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size)
+void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size, int reset_command_pending)
 {
-    dce->command_pending = 0;
+    if (reset_command_pending)
+        dce->command_pending = 0;
     
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;

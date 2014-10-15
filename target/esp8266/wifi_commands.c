@@ -25,13 +25,13 @@ dce_result_t SECTION_ATTR wifi_handle_CWMODE(dce_t* dce, void* group_ctx, int ki
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CWMODE:(1-3)", -1);
+        dce_emit_extended_result_code(dce, "+CWMODE:(1-3)", -1, 1);
     }
     else if (kind == DCE_READ)
     {
         int mode = wifi_get_opmode();
         arg_t arg = {.type = ARG_TYPE_NUMBER, .value.number = mode};
-        dce_emit_extended_result_code_with_args(dce, "CWMODE", -1, &arg, 1);
+        dce_emit_extended_result_code_with_args(dce, "CWMODE", -1, &arg, 1, 1);
     }
     else
     {
@@ -107,7 +107,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
     
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CWJAP:\"ssid\",\"password\"", -1);
+        dce_emit_extended_result_code(dce, "+CWJAP:\"ssid\",\"password\"", -1, 1);
     }
     else if (kind == DCE_WRITE)
     {
@@ -136,7 +136,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
             {ARG_TYPE_STRING, .value.string = conf.ssid},
             {ARG_TYPE_STRING, .value.string = conf.password}
         };
-        dce_emit_extended_result_code_with_args(dce, "CWJAP", -1, args, 2);
+        dce_emit_extended_result_code_with_args(dce, "CWJAP", -1, args, 2, 1);
     }
     return DCE_OK;
 }
@@ -170,7 +170,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
     }
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CWSAP:\"ssid\",\"password\",(1-13),(1-4)", -1);
+        dce_emit_extended_result_code(dce, "+CWSAP:\"ssid\",\"password\",(1-13),(1-4)", -1, 1);
     }
     else if (kind == DCE_WRITE)
     {
@@ -211,7 +211,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
             {ARG_TYPE_NUMBER, .value.number = conf.channel},
             {ARG_TYPE_NUMBER, .value.number = conf.authmode},
         };
-        dce_emit_extended_result_code_with_args(dce, "CWSAP", -1, args, 4);
+        dce_emit_extended_result_code_with_args(dce, "CWSAP", -1, args, 4, 1);
     }
     return DCE_OK;
 }
@@ -225,7 +225,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int ki
         return DCE_RC_OK;
     }
     arg_t arg = {ARG_TYPE_NUMBER, .value.number=wifi_station_get_connect_status()};
-    dce_emit_extended_result_code_with_args(dce, "CWSTAT", -1, &arg, 1);
+    dce_emit_extended_result_code_with_args(dce, "CWSTAT", -1, &arg, 1, 1);
     return DCE_OK;
 }
 
@@ -263,7 +263,7 @@ void wifi_connection_monitor_cb(void* arg)
     {
         ctx->last_connection_status = status;
         arg_t arg = { ARG_TYPE_NUMBER, .value.number=status };
-        dce_emit_extended_result_code_with_args(ctx->dce, "CWSTAT", -1, &arg, 1);
+        dce_emit_extended_result_code_with_args(ctx->dce, "CWSTAT", -1, &arg, 1, 0);
     }
 }
 

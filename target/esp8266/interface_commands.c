@@ -18,11 +18,11 @@ dce_result_t SECTION_ATTR dce_handle_IDBG(dce_t* dce, void* group_ctx, int kind,
     if (kind & DCE_READ)
     {
         arg_t result = {.type = ARG_TYPE_NUMBER, .value.number = uart_get_debug()};
-        dce_emit_extended_result_code_with_args(dce, "IDBG", -1, &result, 1);
+        dce_emit_extended_result_code_with_args(dce, "IDBG", -1, &result, 1, 1);
     }
     else if (kind & DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+IDBG:(0,1)", -1);
+        dce_emit_extended_result_code(dce, "+IDBG:(0,1)", -1, 1);
     }
     else
     {
@@ -46,7 +46,7 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
     if (kind & DCE_READ)
     {
         arg_t result = {ARG_TYPE_NUMBER, .value.number=uart0_get_baudrate(uart)};
-        dce_emit_extended_result_code_with_args(dce, "IPR", -1, &result, 1);
+        dce_emit_extended_result_code_with_args(dce, "IPR", -1, &result, 1, 1);
     }
     else if (kind & DCE_TEST)
     {
@@ -73,7 +73,7 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
         ++pbuf;
         --bufsize;
         
-        dce_emit_extended_result_code(dce, buf, sizeof(buf) - bufsize);
+        dce_emit_extended_result_code(dce, buf, sizeof(buf) - bufsize, 1);
     }
     else
     {

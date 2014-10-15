@@ -46,11 +46,11 @@ dce_result_t dce_handle_TESTPARAM1(dce_t* dce, void* group_ctx, int kind, size_t
     if (kind & DCE_READ)
     {
         arg_t result = {ARG_TYPE_NUMBER, .value.number=ctx->param1};
-        dce_emit_extended_result_code_with_args(dce, "TESTPARAM1", -1, &result, 1);
+        dce_emit_extended_result_code_with_args(dce, "TESTPARAM1", -1, &result, 1, 1);
     }
     else if (kind & DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+TESTPARAM1:(1-100)", -1);
+        dce_emit_extended_result_code(dce, "+TESTPARAM1:(1-100)", -1, 1);
     }
     else
     {
@@ -65,11 +65,11 @@ dce_result_t dce_handle_TESTPARAM3(dce_t* dce, void* group_ctx, int kind, size_t
     if (kind & DCE_READ)
     {
         arg_t result = {ARG_TYPE_NUMBER, .value.number=ctx->param3};
-        dce_emit_extended_result_code_with_args(dce, "TESTPARAM3", -1, &result, 1);
+        dce_emit_extended_result_code_with_args(dce, "TESTPARAM3", -1, &result, 1, 1);
     }
     else if (kind & DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+TESTPARAM3:(0-127)", -1);
+        dce_emit_extended_result_code(dce, "+TESTPARAM3:(0-127)", -1, 1);
     }
     else if (kind & DCE_WRITE)
     {
