@@ -83,7 +83,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kin
         return DCE_RC_OK;
     }
     int status = wifi_station_get_connect_status();
-    if (status != STATION_GOT_IP)
+    if (status != STATION_GOT_IP && status != STATION_IDLE)
     {
         struct station_config conf;
         *conf.ssid = 0;
@@ -249,6 +249,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWLIF(dce_t* dce, void* group_ctx, int kin
     }
     wifi_softap_free_station_info();
     dce_emit_basic_result_code(dce, DCE_RC_OK);
+    return DCE_OK;
 }
 
 void wifi_connection_monitor_cb(void* arg)
