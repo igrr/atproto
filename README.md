@@ -18,6 +18,8 @@ What works so far:
   - Chip id (AT+GSN) and version (AT+GMR) queries
   - Wifi commands (CWLAP, CWJAP, CWSAP, CWSTAT, CWLIF)
   - Wifi connection status reports (+CWSTAT:)
+  - Commands to get IP address for AP and STA (CIPAP, CIPSTA)
+  - Domain names resolution (CIPRESOLVE)
 
 Next up:
   - Transitions between data mode and command mode
