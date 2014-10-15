@@ -19,7 +19,7 @@ typedef struct {
 void SECTION_ATTR ip_print_interface_ip(dce_t* dce, int interface)
 {
     struct ip_info ip;
-    wifi_get_ip_info(STATION_IF, &ip);
+    wifi_get_ip_info(interface, &ip);
     char buf[32];
     uint8_t* pip = (uint8_t*) &ip.ip.addr;
     int len = os_sprintf(buf, "%d.%d.%d.%d",
