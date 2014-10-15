@@ -24,12 +24,30 @@ size_t SECTION_ATTR sprintf_ip(char* buf, uint32_t addr)
                          (uint32_t) pip[2], (uint32_t) pip[3]);
 }
 
+size_t SECTION_ATTR sprintf_mac(char* buf, uint8_t* mac)
+{
+    return os_sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x",
+                         (uint32_t) mac[0], (uint32_t) mac[1], 
+                         (uint32_t) mac[2], (uint32_t) mac[3], 
+                         (uint32_t) mac[4], (uint32_t) mac[5]);
+}
+
 void SECTION_ATTR ip_print_interface_ip(dce_t* dce, int interface, const char* cmdname)
 {
     struct ip_info ip;
     wifi_get_ip_info(interface, &ip);
     char buf[32];
     sprintf_ip(buf, ip.ip.addr);
+    arg_t arg = { ARG_TYPE_STRING, .value.string=buf };
+    dce_emit_extended_result_code_with_args(dce, cmdname, -1, &arg, 1, 1);
+}
+
+void SECTION_ATTR ip_print_interface_mac(dce_t* dce, int interface, const char* cmdname)
+{
+    uint8_t mac[6];
+    wifi_get_macaddr(interface, mac);
+    char buf[32];
+    sprintf_mac(buf, mac);
     arg_t arg = { ARG_TYPE_STRING, .value.string=buf };
     dce_emit_extended_result_code_with_args(dce, cmdname, -1, &arg, 1, 1);
 }
@@ -55,6 +73,30 @@ dce_result_t SECTION_ATTR ip_handle_CIPAP(dce_t* dce, void* group_ctx, int kind,
         return DCE_OK;
     }
     ip_print_interface_ip(dce, SOFTAP_IF, "CIPAP");
+    return DCE_OK;
+}
+
+dce_result_t SECTION_ATTR ip_handle_CIPSTAMAC(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    int mode = wifi_get_opmode();
+    if (mode != STATION_MODE && mode != STATIONAP_MODE)
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    ip_print_interface_mac(dce, STATION_IF, "CIPSTAMAC");
+    return DCE_OK;
+}
+
+dce_result_t SECTION_ATTR ip_handle_CIPAPMAC(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    int mode = wifi_get_opmode();
+    if (mode != SOFTAP_MODE && mode != STATIONAP_MODE)
+    {
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    ip_print_interface_mac(dce, SOFTAP_IF, "CIPAPMAC");
     return DCE_OK;
 }
 
@@ -101,10 +143,11 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
     return DCE_OK;
 }
 
-//DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
 static const command_desc_t commands[] = {
-    {"CIPSTA", &ip_handle_CIPSTA, DCE_ACTION | DCE_EXEC },
-    {"CIPAP", &ip_handle_CIPAP, DCE_ACTION | DCE_EXEC },
+    {"CIPSTA", &ip_handle_CIPSTA, DCE_PARAM | DCE_READ },
+    {"CIPAP", &ip_handle_CIPAP, DCE_PARAM | DCE_READ },
+    {"CIPSTAMAC", &ip_handle_CIPSTAMAC, DCE_PARAM | DCE_READ },
+    {"CIPAPMAC", &ip_handle_CIPAPMAC, DCE_PARAM | DCE_READ },
     {"CIPRESOLVE", &ip_handle_CIPRESOLVE, DCE_PARAM | DCE_WRITE | DCE_TEST },
 };
 
