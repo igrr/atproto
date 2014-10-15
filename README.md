@@ -18,7 +18,7 @@ What works so far:
   - Chip id (AT+GSN) and version (AT+GMR) queries
   - Wifi commands (CWLAP, CWJAP, CWSAP, CWSTAT, CWLIF)
   - Wifi connection status reports (+CWSTAT:)
-  - Commands to get IP address for AP and STA (CIPAP, CIPSTA)
+  - Commands to get IP and MAC address for AP and STA (CIPAP?, CIPSTA?, CIPAPMAC?, CIPSTAMAC?)
   - Domain names resolution (CIPRESOLVE)
 
 Next up:
