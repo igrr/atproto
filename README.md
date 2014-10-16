@@ -36,20 +36,22 @@ Make
 
 - Adjust `XTENSA_TOOCHAIN`, `XTENSA_LIBS`, `SDK_BASE`, `ESPTOOL` directories in target/esp8266/target.mk
 - Apply the following diff to include/c_types.h so that it doesn't redefine types from stdint.h:
-        ```
-        8c8,9
-        < 
-        ---
-        > #include <stdint.h>
-        > #if 0
-        19a21
-        > #endif
-        47c49,50
-        < typedef unsigned int        size_t;
-        ---
-        > //typedef unsigned int        size_t;
-        > 
-        ```
+
+  ```
+  8c8,9
+  < 
+  ---
+  > #include <stdint.h>
+  > #if 0
+  19a21
+  > #endif
+  47c49,50
+  < typedef unsigned int        size_t;
+  ---
+  > //typedef unsigned int        size_t;
+  > 
+  ```
+
 - Run ```make all TARGET=esp8266```
 - The firmware will be generated in bin/0x00000.bin and bin/0x40000.bin
 
