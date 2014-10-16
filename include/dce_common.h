@@ -22,10 +22,21 @@
 #define SECTION_ATTR __attribute__((section(".irom0.text")))
 #define malloc os_malloc
 #define free os_free
+#define eprintf os_printf
 #else
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #define SECTION_ATTR
+#define eprintf printf
 #endif
+
+#define S1(x) #x
+#define S2(x) S1(x)
+#define LOCATION __FILE__ "@" S2(__LINE__)
+#define DCE_FAIL(msg) target_dce_assert("Internal error in " LOCATION ": " msg)
+#define DCE_DEBUG(msg) eprintf("\r\n" LOCATION ": " msg "\r\n")
+#define DCE_DEBUGV(msg, ...) eprintf("\r\n" LOCATION ": " msg "\r\n", __VA_ARGS__)
+
 
 #endif

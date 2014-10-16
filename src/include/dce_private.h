@@ -58,9 +58,4 @@ struct dce_
 
 void dce_init_defaults(dce_t* dce);
 
-#define S1(x) #x
-#define S2(x) S1(x)
-#define LOCATION __FILE__ "@" S2(__LINE__)
-#define DCE_FAIL(msg) target_dce_assert("Internal error in " LOCATION ": " msg)
-
 #endif//__DCE_PRIVATE_H

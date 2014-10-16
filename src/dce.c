@@ -237,11 +237,12 @@ dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* 
         }
         else if (c != ',')
         {
+            DCE_DEBUG("expected ,");
             return DCE_INVALID_INPUT;
         }
         if (argc == DCE_MAX_ARGS)
         {
-            // too many args
+            DCE_DEBUG("too many arguments");
             return DCE_INVALID_INPUT;
         }
         args[argc++] = arg;
@@ -292,6 +293,7 @@ dce_result_code_t SECTION_ATTR dce_process_args_run_command(dce_t* ctx, const co
             int rc = dce_parse_args(buf + 1, size - 1, &argc, args);
             if (rc != DCE_OK)
             {
+                DCE_DEBUG("failed to parse args");
                 dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
                 return DCE_OK;
             }
@@ -328,6 +330,7 @@ dce_result_t SECTION_ATTR dce_process_extended_format_command(dce_t* ctx, const 
             return dce_process_args_run_command(ctx, group, command, buf + pos, size - pos);
         }
     }
+    DCE_DEBUG("command handler not found");
     dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
     return DCE_OK;
 }
@@ -343,6 +346,7 @@ dce_result_t SECTION_ATTR dce_process_command_line(dce_t* ctx)
     
     if (size < 2)
     {
+        DCE_DEBUG("line does not start with AT");
         dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -352,6 +356,7 @@ dce_result_t SECTION_ATTR dce_process_command_line(dce_t* ctx)
     if (!BEGINS(buf, 'A', 'T') &&
         !BEGINS(buf, 'a', 't'))
     {
+        DCE_DEBUG("line does not start with AT");
         dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -397,6 +402,7 @@ dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char*
         }
         if (ctx->rx_buffer_pos == ctx->rx_buffer_size)
         {
+            DCE_DEBUG("rx buffer overflow");
             dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
             ctx->rx_buffer_pos = 0;
         }

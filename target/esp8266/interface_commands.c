@@ -28,6 +28,7 @@ dce_result_t SECTION_ATTR dce_handle_IDBG(dce_t* dce, void* group_ctx, int kind,
     {
         if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER || argv[0].value.number > 1)
         {
+            DCE_DEBUG("invalid argument");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
@@ -79,6 +80,7 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
     {
         if (argc != 1 || argv->type != ARG_TYPE_NUMBER)
         {
+            DCE_DEBUG("invalid arguments");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
@@ -98,6 +100,7 @@ dce_result_t SECTION_ATTR dce_handle_IPR(dce_t* dce, void* group_ctx, int kind, 
                 return DCE_OK;
             }
         }
+        DCE_DEBUG("unsupported baud rate");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
     }
     return DCE_OK;

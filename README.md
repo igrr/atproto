@@ -29,6 +29,9 @@ Next up:
   - Handling of malformed input (besides returning ERROR)
   - DTE part of the business
 
+Many commands that return ERROR print error reason when debug output is enabled. 
+To enable debug output, issue AT+IDBG=1 command.
+ 
 Make
 ----
 
@@ -56,6 +59,8 @@ Make
 - The firmware will be generated in bin/0x00000.bin and bin/0x40000.bin
 
 Or just get [prebuilt binaries].
+
+Default baud rate is 9600, you can change it (persistently) using AT+IPR command.
 
 ### Host
 - Run ```make test```

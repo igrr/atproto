@@ -37,6 +37,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWMODE(dce_t* dce, void* group_ctx, int ki
     {
         if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER || argv[0].value.number > 3)
         {
+            DCE_DEBUG("invalid arguments");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
@@ -58,6 +59,7 @@ void SECTION_ATTR wifi_handle_CWLAP_scan_complete(void* result, STATUS status)
     
     if (status != OK)
     {
+        DCE_DEBUG("scan failed");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return;
     }
@@ -79,6 +81,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kin
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -101,6 +104,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -118,6 +122,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
             strlen(argv[0].value.string) >= sizeof(conf.ssid) - 1 ||
             strlen(argv[1].value.string) >= sizeof(conf.password) - 1 )
         {
+            DCE_DEBUG("invalid arguments");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_RC_OK;
         }
@@ -147,6 +152,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWQAP(dce_t* dce, void* group_ctx, int kin
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -165,6 +171,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
     int mode = wifi_get_opmode();
     if (mode != SOFTAP_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in ap or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -183,6 +190,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
             argv[2].type != ARG_TYPE_NUMBER ||
             argv[3].type != ARG_TYPE_NUMBER)
         {
+            DCE_DEBUG("invalid arguments");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_RC_OK;
         }
@@ -195,6 +203,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
         if (conf.channel > 13 ||
             conf.authmode > AUTH_WPA_WPA2_PSK)
         {
+            DCE_DEBUG("invalid channel or encryption value");
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
@@ -221,6 +230,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int ki
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -231,6 +241,13 @@ dce_result_t SECTION_ATTR wifi_handle_CWSTAT(dce_t* dce, void* group_ctx, int ki
 
 dce_result_t SECTION_ATTR wifi_handle_CWLIF(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
+    int mode = wifi_get_opmode();
+    if (mode != SOFTAP_MODE && mode != STATIONAP_MODE)
+    {
+        DCE_DEBUG("not in ap or sta+ap mode");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_RC_OK;
+    }
     wifi_ctx_t* ctx = (wifi_ctx_t*) group_ctx;
     struct station_info * station = wifi_softap_get_station_info();
     while (station)

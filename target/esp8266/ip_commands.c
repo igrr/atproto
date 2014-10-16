@@ -57,6 +57,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTA(dce_t* dce, void* group_ctx, int kind
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -69,6 +70,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPAP(dce_t* dce, void* group_ctx, int kind,
     int mode = wifi_get_opmode();
     if (mode != SOFTAP_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in ap or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -81,6 +83,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTAMAC(dce_t* dce, void* group_ctx, int k
     int mode = wifi_get_opmode();
     if (mode != STATION_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in sta or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -93,6 +96,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPAPMAC(dce_t* dce, void* group_ctx, int ki
     int mode = wifi_get_opmode();
     if (mode != SOFTAP_MODE && mode != STATIONAP_MODE)
     {
+        DCE_DEBUG("not in ap or sta+ap mode");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
@@ -105,6 +109,7 @@ void SECTION_ATTR ip_resolve_callback(const char *name, ip_addr_t *ipaddr, void 
     dce_t* dce = ((ip_ctx_t*)callback_arg)->dce;
     if (!ipaddr)
     {
+        DCE_DEBUG("name resolution failed");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return;
     }
@@ -125,6 +130,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
     if (argc != 1 ||
         argv[0].type != ARG_TYPE_STRING)
     {
+        DCE_DEBUG("invalid arguments");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
@@ -134,6 +140,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
     err_t result = espconn_gethostbyname(group_ctx, hostname, &addr, &ip_resolve_callback);
     if (result == ESPCONN_ARG)
     {
+        DCE_DEBUG("invalid host name");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
     }
     else if (result == ESPCONN_OK)
