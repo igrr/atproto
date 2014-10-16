@@ -24,6 +24,7 @@
 #define free os_free
 #define eprintf os_printf
 #else
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
