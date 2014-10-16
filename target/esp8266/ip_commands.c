@@ -12,9 +12,39 @@
 #include "user_interface.h"
 #include "espconn.h"
 
+#define MAX_ESP_CONNECTIONS 8
+
 typedef struct {
     dce_t* dce;
+    struct espconn connections[MAX_ESP_CONNECTIONS];
 } ip_ctx_t;
+
+
+int ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type)
+{
+    struct espconn* pconn = ctx->connections;
+    int i;
+    for (i = 0; i < MAX_ESP_CONNECTIONS && pconn->type != ESPCONN_INVALID; ++i, ++pconn) {}
+    if (i == MAX_ESP_CONNECTIONS)
+        return -1;
+    
+    pconn->type = type;
+    if (type == ESPCONN_TCP)
+    {
+        pconn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
+    }
+    else
+    {
+        pconn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+    }
+    return i;
+}
+
+void ip_espconn_release(ip_ctx_t* ctx, int index)
+{
+    free(ctx->connections[index].proto.tcp);
+    ctx->connections[index].type = ESPCONN_INVALID;
+}
 
 size_t SECTION_ATTR sprintf_ip(char* buf, uint32_t addr)
 {
@@ -150,12 +180,118 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
     return DCE_OK;
 }
 
+dce_result_t SECTION_ATTR ip_handle_CIPCREATE(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CIPCREATE=\"TCP|UDP\"[,port]", -1, 1);
+        return DCE_OK;
+    }
+    
+    if (!(argc > 0 && argv[0].type == ARG_TYPE_STRING &&
+          (argc == 1 ||
+           (argc == 2 && (argv[1].type == ARG_TYPE_NUMBER || argv[1].type == ARG_NOT_SPECIFIED))
+       )))
+    {
+        DCE_DEBUG("invalid args");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    
+    enum espconn_type connection_type = ESPCONN_INVALID;
+    if (strcmp("TCP", argv[0].value.string) == 0)
+        connection_type = ESPCONN_TCP;
+    else if (strcmp("UDP", argv[0].value.string) == 0)
+        connection_type = ESPCONN_UDP;
+    else
+    {
+        DCE_DEBUG("invalid protocol");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
+    int index = ip_espconn_get(ip_ctx, connection_type);
+    if (index < 0) // all connections are in use
+    {
+        DCE_DEBUG("all connections in use");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    
+    struct espconn* connection = ip_ctx->connections + index;
+    
+    int port;
+    if (argc == 2 && argv[1].type == ARG_TYPE_NUMBER)
+        port = argv[1].value.number;
+    else
+        port = espconn_port();
+    if (connection_type == ESPCONN_TCP)
+        connection->proto.tcp->local_port = port;
+    else
+        connection->proto.udp->local_port = port;
+    arg_t args[] = {{ARG_TYPE_NUMBER, .value.number=index},
+                    {ARG_TYPE_NUMBER, .value.number=port}};
+    
+    dce_emit_extended_result_code_with_args(dce, "CIPCREATE", -1, args, 2, 1);
+    return DCE_OK;
+}
+
+dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CIPCLOSE=<index>", -1, 1);
+        return DCE_OK;
+    }
+    if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER)
+    {
+        DCE_DEBUG("invalid arguments");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
+    int index = argv[0].value.number;
+    if (ip_ctx->connections[index].type == ESPCONN_INVALID)
+    {
+        DCE_DEBUG("connection not in use");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    ip_espconn_release(ip_ctx, index);
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
+    return DCE_RC_OK;
+}
+
+dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CIPCONNECT=<index>,\"ip_addr\",<remote_port>", -1, 1);
+        return DCE_OK;
+    }
+    if (argc != 3 ||
+        argv[0].type != ARG_TYPE_NUMBER ||
+        argv[1].type != ARG_TYPE_STRING ||
+        argv[2].type != ARG_TYPE_NUMBER)
+    {
+        DCE_DEBUG("invalid arguments");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    
+    
+    return DCE_OK;
+}
+
 static const command_desc_t commands[] = {
-    {"CIPSTA", &ip_handle_CIPSTA, DCE_PARAM | DCE_READ },
-    {"CIPAP", &ip_handle_CIPAP, DCE_PARAM | DCE_READ },
-    {"CIPSTAMAC", &ip_handle_CIPSTAMAC, DCE_PARAM | DCE_READ },
-    {"CIPAPMAC", &ip_handle_CIPAPMAC, DCE_PARAM | DCE_READ },
-    {"CIPRESOLVE", &ip_handle_CIPRESOLVE, DCE_PARAM | DCE_WRITE | DCE_TEST },
+    { "CIPSTA",      &ip_handle_CIPSTA,      DCE_PARAM | DCE_READ },
+    { "CIPAP",       &ip_handle_CIPAP,       DCE_PARAM | DCE_READ },
+    { "CIPSTAMAC",   &ip_handle_CIPSTAMAC,   DCE_PARAM | DCE_READ },
+    { "CIPAPMAC",    &ip_handle_CIPAPMAC,    DCE_PARAM | DCE_READ },
+    { "CIPRESOLVE",  &ip_handle_CIPRESOLVE,  DCE_PARAM | DCE_WRITE | DCE_TEST },
+    { "CIPCREATE",   &ip_handle_CIPCREATE,   DCE_PARAM | DCE_WRITE | DCE_TEST },
+    { "CIPCLOSE",    &ip_handle_CIPCLOSE,    DCE_PARAM | DCE_WRITE | DCE_TEST },
+    { "CIPCONNECT",  &ip_handle_CIPCONNECT,  DCE_PARAM | DCE_WRITE | DCE_TEST },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);
@@ -164,5 +300,6 @@ void SECTION_ATTR dce_register_ip_commands(dce_t* dce)
 {
     static ip_ctx_t ip_ctx;
     ip_ctx.dce = dce;
+    memset(ip_ctx.connections, 0, sizeof(struct espconn) * MAX_ESP_CONNECTIONS);
     dce_register_command_group(dce, "CI", commands, ncommands, &ip_ctx);
 }
