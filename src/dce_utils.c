@@ -118,3 +118,24 @@ void SECTION_ATTR dce_strcpy(const char* str, char* buf, size_t bufsize, size_t*
     *outsize = buf - start;
 }
 
+int SECTION_ATTR dce_parse_ip(const char* buf, uint8_t* ip)
+{
+    size_t len = strlen(buf);
+    const char* pb = buf;
+    for (int i = 0; i < 4 && len > 0; ++i)
+    {
+        int val = dce_expect_number(&pb, &len, -1);
+        if (val < 0 || val > 255)
+            return -1;
+        ip[i] = val;
+        if (i == 3)
+            break;
+        if (!len || *pb != '.')
+            return -1;
+        --len;
+        ++pb;
+    }
+    if (len)
+        return -1;
+    return 0;
+}

@@ -124,3 +124,35 @@ TEST_CASE("concatenate stuff", "[utils]")
     REQUIRE(bufsize == sizeof(buf) - strlen(ref));
     REQUIRE(strcmp(buf, ref) == 0);
 }
+
+typedef struct {
+    const char* str;
+    int rc;
+    uint8_t num[4];
+} ip_test_case_t;
+
+TEST_CASE("parse IPs", "[utils]")
+{
+    ip_test_case_t test_cases[] = {
+        {"192.168.1.129",   0,  {192, 168, 1, 129}},
+        {"1.2.3.4",         0,  {1, 2, 3, 4}},
+        {"001.002.003.004", 0,  {1, 2, 3, 4}},
+        {"1..3.4",          -1, {0}},
+        {"1.2.3.4:80",      -1, {0}},
+        {"http://1.2.3.4",  -1, {0}},
+        {"ab.ef.03.24",     -1, {0}},
+    };
+    
+    int test_cases_count = sizeof(test_cases) / sizeof(ip_test_case_t);
+    uint8_t ip[4];
+    ip_test_case_t* test_case = test_cases;
+    for (int i = 0; i < test_cases_count; ++i, ++test_case)
+    {
+        REQUIRE(dce_parse_ip(test_case->str, ip) == test_case->rc);
+        if (!test_case->rc)
+        {
+            REQUIRE(memcmp(ip, test_case->num, 4) == 0);
+        }
+    }
+}
+
