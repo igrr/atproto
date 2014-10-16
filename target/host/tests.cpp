@@ -173,3 +173,32 @@ TEST_CASE("read-write parameter", "[dce]")
     
     dce_uninit(dce);
 }
+
+TEST_CASE("consume linefeed after carriage return", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATS3?\r\n") == DCE_OK);
+    REQUIRE(g_tx_data == "ATS3?\r\r\n013\r\n\r\nOK\r\n");
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATS4?\r\n") == DCE_OK);
+    REQUIRE(g_tx_data == "ATS4?\r\r\n010\r\n\r\nOK\r\n");
+    dce_uninit(dce);
+}
+
+TEST_CASE("can reset dce even if command is pending", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATE0\r") == DCE_OK);
+    g_tx_data.clear();
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "AT+TESTNORETURN\r") == DCE_OK);
+    REQUIRE(g_tx_data == "\r\nBUSY\r\n");
+    g_tx_data.clear();
+    g_reset = false;
+    REQUIRE(DCE_HANDLE_INPUT_STR(dce, "ATZ\r") == DCE_OK);
+    REQUIRE(g_reset);
+    dce_uninit(dce);
+}
+

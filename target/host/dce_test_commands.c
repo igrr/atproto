@@ -86,11 +86,19 @@ dce_result_t dce_handle_TESTPARAM3(dce_t* dce, void* group_ctx, int kind, size_t
     return DCE_OK;
 }
 
+dce_result_t dce_handle_TESTNORETURN(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    dce_emit_information_response(dce, "BUSY", -1);
+    return DCE_OK;
+}
+
 
 static const command_desc_t commands[] = {
         {"TESTARGS",    &dce_handle_TESTARGS,   DCE_ACTION | DCE_EXEC},
         {"TESTPARAM1",  &dce_handle_TESTPARAM1, DCE_PARAM | DCE_TEST | DCE_READ},
         {"TESTPARAM3",  &dce_handle_TESTPARAM3, DCE_PARAM | DCE_TEST | DCE_READ | DCE_WRITE},
+        {"TESTPARAM3",  &dce_handle_TESTPARAM3, DCE_PARAM | DCE_TEST | DCE_READ | DCE_WRITE},
+        {"TESTNORETURN",  &dce_handle_TESTNORETURN, DCE_ACTION | DCE_EXEC},
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);

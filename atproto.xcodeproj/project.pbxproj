@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A155472A19E68D5800E6425A /* wifi_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A155472819E68D5800E6425A /* wifi_commands.c */; };
 		A18881D819EDC4C000286BF7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A18881D719EDC4C000286BF7 /* README.md */; };
-		A18881EC19EE726000286BF7 /* ip_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A18881D319EDC49500286BF7 /* ip_commands.c */; };
 		A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32119DC812100E94BBC /* dce_basic_commands.c */; };
 		A1EEC32A19DC812100E94BBC /* dce.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32419DC812100E94BBC /* dce.c */; };
 		A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32619DC812100E94BBC /* dce_utils.c */; };
@@ -232,12 +230,10 @@
 				A1EEC37F19DD7F7B00E94BBC /* tests.cpp in Sources */,
 				A1EEC37E19DD7F7B00E94BBC /* dce_test_commands.c in Sources */,
 				A1EEC37D19DD7F7B00E94BBC /* test_dce_utils.cpp in Sources */,
-				A18881EC19EE726000286BF7 /* ip_commands.c in Sources */,
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
 				A1EEC32A19DC812100E94BBC /* dce.c in Sources */,
 				A18881D819EDC4C000286BF7 /* README.md in Sources */,
 				A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */,
-				A155472A19E68D5800E6425A /* wifi_commands.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

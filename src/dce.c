@@ -400,6 +400,11 @@ dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char*
             dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
             ctx->rx_buffer_pos = 0;
         }
+        if (ctx->rx_buffer_pos == 0 && c == ctx->lf)
+        {
+            // consume LF that some terminals send after CR
+            continue;
+        }
         if (ctx->echo)
         {
             target_dce_transmit(&c, 1);
@@ -409,9 +414,12 @@ dce_result_t SECTION_ATTR dce_handle_command_state_input(dce_t* ctx, const char*
             if (ctx->command_pending)
             {
                 // got another command before response has been sent
-                // ignore it since any error code may be interpreted as a return code
-                // for the original command
+                // handle only reset command (ATZ)
+                if (ctx->rx_buffer_pos == 3 && memcmp("ATZ", ctx->rx_buffer, 3) == 0)
+                    target_dce_reset();
                 
+                // ignore other commands since any error code may be interpreted as a return code
+                // for the original command
                 ctx->rx_buffer_pos = 0;
             }
             else
