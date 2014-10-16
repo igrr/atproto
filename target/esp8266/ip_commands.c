@@ -272,7 +272,8 @@ dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int ki
     }
     ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
-    if (ip_ctx->connections[index].type == ESPCONN_INVALID)
+    struct espconn* connection = ip_ctx->connections + index;
+    if (connection->type == ESPCONN_INVALID)
     {
         DCE_DEBUG("connection not in use");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
@@ -379,11 +380,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int 
         espconn_regist_reconcb(connection, (espconn_reconnect_callback) &ip_tcp_reconnect_callback);
         espconn_regist_disconcb(connection,  (espconn_connect_callback) &ip_tcp_disconnect_callback);
     }
-    DCE_DEBUG("connecting");
-    if (argv[2].value.number == 42)
-        ip_tcp_connect_callback(connection);
-    else
-        espconn_connect(connection);
+    espconn_connect(connection);
     
     return DCE_OK;
 }
