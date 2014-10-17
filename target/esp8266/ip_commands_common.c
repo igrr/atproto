@@ -7,6 +7,7 @@
 
 #include "user_interface.h"
 #include "ip_commands_common.h"
+#include "dce_target.h"
 
 void SECTION_ATTR ip_ctx_init(ip_ctx_t* ip_ctx)
 {
@@ -18,10 +19,9 @@ void SECTION_ATTR ip_ctx_init(ip_ctx_t* ip_ctx)
         arg->ctx = ip_ctx;
         ip_ctx->connections[i].reverse = arg;
     }
-    
 }
 
-int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type)
+int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type, size_t rx_buffer_size)
 {
     struct espconn* pconn = ctx->connections;
     int i;
@@ -38,6 +38,17 @@ int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type)
     {
         pconn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
     }
+    
+    espconn_callback_arg_t* callback_context = ctx->callback_args + i;
+    if (callback_context->rx_buffer_size != rx_buffer_size)
+    {
+        free(callback_context->rx_buffer);
+        callback_context->rx_buffer = (char*) malloc(rx_buffer_size);
+        callback_context->rx_buffer_size = rx_buffer_size;
+    }
+    if (!callback_context->rx_buffer)
+        DCE_FAIL("failed to allocate rx buffer");
+    callback_context->rx_buffer_pos = 0;
     return i;
 }
 

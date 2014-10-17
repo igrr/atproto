@@ -29,6 +29,7 @@ static const command_desc_t commands[] = {
     { "CIPCONNECT",     &ip_handle_CIPCONNECT,      DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPDISCONNECT",  &ip_handle_CIPDISCONNECT,   DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPSENDI",       &ip_handle_CIPSENDI,        DCE_ACTION | DCE_EXEC | DCE_TEST },
+    { "CIPRD",          &ip_handle_CIPRD,           DCE_ACTION | DCE_EXEC | DCE_TEST },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);

@@ -13,12 +13,16 @@
 #include "dce_commands.h"
 
 #define MAX_ESP_CONNECTIONS 8
+#define DEFAULT_RX_BUFFER_SIZE 2048
 
 typedef struct ip_ctx_ ip_ctx_t;
 
 typedef struct {
     int connection_index;
     ip_ctx_t* ctx;
+    char* rx_buffer;
+    size_t rx_buffer_size;
+    size_t rx_buffer_pos;
 } espconn_callback_arg_t;
 
 struct ip_ctx_ {
@@ -29,7 +33,7 @@ struct ip_ctx_ {
 
 
 void ip_ctx_init(ip_ctx_t* ip_ctx);
-int ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type);
+int ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type, size_t rx_buffer_size);
 void ip_espconn_release(ip_ctx_t* ctx, int index);
 size_t sprintf_ip(char* buf, uint32_t addr);
 size_t sprintf_mac(char* buf, uint8_t* mac);

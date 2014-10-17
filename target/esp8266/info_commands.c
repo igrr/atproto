@@ -19,7 +19,7 @@ dce_result_t SECTION_ATTR dce_handle_GMM(dce_t* dce, void* group_ctx, int kind, 
 
 dce_result_t SECTION_ATTR dce_handle_GMR(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
-    dce_emit_information_response(dce, VERSION_STRING " r" REVISION_STRING, -1);
+    dce_emit_information_response(dce, VERSION_STRING " rev. " REVISION_STRING, -1);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }

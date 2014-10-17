@@ -16,5 +16,6 @@ dce_result_t ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int kind, size_t ar
 dce_result_t ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 dce_result_t ip_handle_CIPDISCONNECT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 dce_result_t ip_handle_CIPSENDI(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
+dce_result_t ip_handle_CIPRD(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 
 #endif//IP_COMMANDS_SOCKET_H
