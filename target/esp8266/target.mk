@@ -4,6 +4,9 @@ TARGET_OBJ_FILES := main.o \
 					info_commands.o \
 					wifi_commands.o \
 					ip_commands.o \
+					ip_commands_info.o \
+					ip_commands_common.o \
+					ip_commands_socket.o \
 					config_store.o \
 
 
