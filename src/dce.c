@@ -179,7 +179,7 @@ void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response
     target_dce_transmit(crlf, 2);
 }
 
-void dce_continue_information_response(dce_t* dce, const char* response, size_t size)
+void SECTION_ATTR dce_continue_information_response(dce_t* dce, const char* response, size_t size)
 {
     const char crlf[] = {dce->cr, dce->lf};
     if (size == -1)
@@ -204,20 +204,11 @@ dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* 
         
         if (c == '"')    // it's a string
         {
-            ++buf;
-            --size;
-            const char* str = buf;
-            for (;size > 0 && *buf != '"'; ++buf, --size)
-            {
-                // TODO: handle escape sequences
-            }
-            if (*buf != '"')    // line has ended without a closing quote
+            char* result;
+            if (dce_expect_string(&buf, &size, &result) != 0)
                 return DCE_INVALID_INPUT;
-            *buf = 0;
             arg.type = ARG_TYPE_STRING;
-            arg.value.string = str;
-            ++buf;
-            --size;
+            arg.value.string = result;
             if (size > 0 && *buf == ',')
             {
                 ++buf;

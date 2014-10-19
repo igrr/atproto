@@ -139,3 +139,91 @@ int SECTION_ATTR dce_parse_ip(const char* buf, uint8_t* ip)
         return -1;
     return 0;
 }
+
+int SECTION_ATTR dce_expect_string(char** pbuf, size_t* psize, char** result)
+{
+    char* src = *pbuf;
+    size_t size = *psize;
+    if (size < 2 || *src != '"')
+        return -1;
+    ++src;
+    --size;
+    int quote = 0;
+    *result = src;
+    for (char* dst = src; size > 0; ++src, --size)
+    {
+        char c = *src;
+        if (quote == 0 && c == '\\')
+        {
+            quote = 1;
+            continue;
+        }
+        if (quote == 1)
+        {
+            switch (c) {
+                case '\\':
+                case '"':
+                    *dst = c;
+                    break;
+                case 'n':
+                    *dst = '\n';
+                    break;
+                case 'r':
+                    *dst = '\r';
+                    break;
+                case 't':
+                    *dst = '\t';
+                    break;
+                case 'x':
+                    quote = 2;
+                    continue;
+                default:
+                    DCE_DEBUGV("invalid escape sequence: \\%c", c);
+                    return -1;
+            }
+            ++dst;
+            quote = 0;
+            continue;
+        }
+        if (quote == 2)
+        {
+            if (size < 2)
+            {
+                DCE_DEBUG("incomplete escape sequence");
+                return -1;
+            }
+            char c1 = src[0];
+            char c2 = src[1];
+            ++src;
+            --size;
+            if (!dce_ishex(c1) || !dce_ishex(c2))
+            {
+                DCE_DEBUG("escape sequence \\x?? contains non hex characters");
+                return -1;
+            }
+            char result = (dce_htoi(c1) << 4) | dce_htoi(c2);
+            if (result == 0)
+            {
+                DCE_DEBUG("escape sequence \\x00 is not supported");
+                return -1;
+            }
+            *dst = result;
+            ++dst;
+            quote = 0;
+            continue;
+        }
+        if (c == '"')
+        {
+            *dst = 0;
+            *pbuf = ++src;
+            *psize = --size;
+            return 0;
+        }
+        *dst = c;
+        ++dst;
+    }
+    DCE_DEBUG("string is missing a closing quote");
+    return -1;
+}
+
+

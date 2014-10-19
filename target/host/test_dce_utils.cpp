@@ -156,3 +156,41 @@ TEST_CASE("parse IPs", "[utils]")
     }
 }
 
+typedef struct {
+    const char* str;
+    const char* ref;
+} escape_test_case_t;
+
+TEST_CASE("handle escape sequences in strings", "[utils]")
+{
+    escape_test_case_t test_cases[] = {
+        {"\" a b c 1 2 3 \"", " a b c 1 2 3 "},
+        {"\"\\\"abc\\\"\"", "\"abc\""},
+        {"\"\\r\\n\\t\"", "\r\n\t"},
+        {"\"\\x32\\x48\"", "\x32\x48"},
+        {"abc\"", 0},
+        {"\"\\x00\"", 0},
+        {"\"\\b\"", 0},
+        {"\"\\2\"", 0},
+    };
+    int test_cases_count = sizeof(test_cases) / sizeof(escape_test_case_t);
+    escape_test_case_t* test_case = test_cases;
+    char buf[128];
+    for (int i = 0; i < test_cases_count; ++i, ++test_case)
+    {
+        strcpy(buf, test_case->str);
+        char* b = buf;
+        size_t len = strlen(b);
+        char* result;
+        int expected_result = 0;
+        if (test_case->ref == 0)
+            expected_result = -1;
+        REQUIRE(dce_expect_string(&b, &len, &result) == expected_result);
+        if (expected_result == 0)
+        {
+            REQUIRE(len == 0);
+            REQUIRE(strcmp(result, test_case->ref) == 0);
+        }
+    }
+}
+
