@@ -297,13 +297,13 @@ void wifi_stop_connection_monitor(wifi_ctx_t* wifi_ctx)
 }
 
 static const command_desc_t commands[] = {
-    {"CWMODE", &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
-    {"CWLAP", &wifi_handle_CWLAP, DCE_ACTION | DCE_EXEC },
-    {"CWJAP", &wifi_handle_CWJAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
-    {"CWQAP", &wifi_handle_CWQAP, DCE_ACTION | DCE_EXEC },
-    {"CWSAP", &wifi_handle_CWSAP, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
-    {"CWSTAT", &wifi_handle_CWSTAT, DCE_PARAM | DCE_READ },
-    {"CWLIF", &wifi_handle_CWLIF, DCE_ACTION | DCE_EXEC },
+    {"CWMODE",  &wifi_handle_CWMODE, DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"CWLAP",   &wifi_handle_CWLAP,  DCE_ACTION | DCE_EXEC },
+    {"CWJAP",   &wifi_handle_CWJAP,  DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"CWQAP",   &wifi_handle_CWQAP,  DCE_ACTION | DCE_EXEC },
+    {"CWSAP",   &wifi_handle_CWSAP,  DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
+    {"CWSTAT",  &wifi_handle_CWSTAT, DCE_PARAM | DCE_READ },
+    {"CWLIF",   &wifi_handle_CWLIF,  DCE_ACTION | DCE_EXEC },
 };
 
 static const int ncommands = sizeof(commands) / sizeof(command_desc_t);

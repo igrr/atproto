@@ -11,52 +11,66 @@
 
 void SECTION_ATTR ip_ctx_init(ip_ctx_t* ip_ctx)
 {
-    memset(ip_ctx->connections, 0, sizeof(struct espconn) * MAX_ESP_CONNECTIONS);
-    espconn_callback_arg_t* arg = ip_ctx->callback_args;
+    memset(ip_ctx->connections, 0, sizeof(ip_ctx->connections));
+    ip_connection_t* arg = ip_ctx->connections;
     for (int i = 0; i < MAX_ESP_CONNECTIONS; ++i, ++arg)
     {
-        arg->connection_index = i;
         arg->ctx = ip_ctx;
-        ip_ctx->connections[i].reverse = arg;
+        arg->type = UNUSED;
+        arg->server_index = -1;
+        arg->index = i;
     }
 }
 
-int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type, size_t rx_buffer_size)
+int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx,
+                                struct espconn* con, enum espconn_type protocol,
+                                size_t rx_buffer_size)
 {
-    struct espconn* pconn = ctx->connections;
+    ip_connection_t* pconn = ctx->connections;
     int i;
-    for (i = 0; i < MAX_ESP_CONNECTIONS && pconn->type != ESPCONN_INVALID; ++i, ++pconn) {}
+    for (i = 0; i < MAX_ESP_CONNECTIONS && pconn->type != UNUSED; ++i, ++pconn) {}
     if (i == MAX_ESP_CONNECTIONS)
         return -1;
     
-    pconn->type = type;
-    if (type == ESPCONN_TCP)
+    if (!con)
     {
-        pconn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
+        pconn->connection = (struct espconn*) malloc(sizeof(struct espconn));
+        memset(pconn->connection, 0, sizeof(struct espconn));
     }
     else
     {
-        pconn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+        pconn->connection = con;
     }
+    pconn->connection->reverse = pconn;
     
-    espconn_callback_arg_t* callback_context = ctx->callback_args + i;
-    if (callback_context->rx_buffer_size != rx_buffer_size)
+    if (protocol == ESPCONN_TCP)
     {
-        free(callback_context->rx_buffer);
-        callback_context->rx_buffer = (char*) malloc(rx_buffer_size);
-        callback_context->rx_buffer_size = rx_buffer_size;
+        pconn->connection->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
     }
-    if (!callback_context->rx_buffer)
-        DCE_FAIL("failed to allocate rx buffer");
-    callback_context->rx_buffer_pos = 0;
+    else
+    {
+        pconn->connection->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+    }
+    pconn->connection->type = protocol;
+    pconn->type = CREATED;
+    pconn->rx_buffer_size = rx_buffer_size;
+    pconn->rx_buffer_pos = 0;
+    pconn->rx_buffer = (char*) malloc(pconn->rx_buffer_size);
+    
     return i;
 }
 
 void  SECTION_ATTR ip_espconn_release(ip_ctx_t* ctx, int index)
 {
-    free(ctx->connections[index].proto.tcp);
-    ctx->connections[index].type = ESPCONN_INVALID;
+    ip_connection_t* conn = ctx->connections + index;
+    free(conn->connection->proto.tcp);
+    free(conn->connection);
+    conn->connection = 0;
+    free(conn->rx_buffer);
+    conn->rx_buffer = 0;
+    conn->type = UNUSED;
 }
+
 
 size_t SECTION_ATTR sprintf_ip(char* buf, uint32_t addr)
 {

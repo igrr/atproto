@@ -17,23 +17,28 @@
 
 typedef struct ip_ctx_ ip_ctx_t;
 
+typedef enum { UNUSED, CREATED, CLIENT, SERVER } connection_type_t;
+
 typedef struct {
-    int connection_index;
+    struct espconn* connection;
+    int index;
     ip_ctx_t* ctx;
     char* rx_buffer;
     size_t rx_buffer_size;
     size_t rx_buffer_pos;
-} espconn_callback_arg_t;
+    connection_type_t type;
+    int server_index;
+} ip_connection_t;
 
 struct ip_ctx_ {
     dce_t* dce;
-    struct espconn connections[MAX_ESP_CONNECTIONS];
-    espconn_callback_arg_t callback_args[MAX_ESP_CONNECTIONS];
+    ip_connection_t connections[MAX_ESP_CONNECTIONS];
 };
 
 
 void ip_ctx_init(ip_ctx_t* ip_ctx);
-int ip_espconn_get(ip_ctx_t* ctx, enum espconn_type type, size_t rx_buffer_size);
+int ip_espconn_get(ip_ctx_t* ctx,
+        struct espconn* con, enum espconn_type protocol, size_t rx_buffer_size);
 void ip_espconn_release(ip_ctx_t* ctx, int index);
 size_t sprintf_ip(char* buf, uint32_t addr);
 size_t sprintf_mac(char* buf, uint8_t* mac);

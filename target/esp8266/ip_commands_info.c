@@ -102,7 +102,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_information_response(dce, "+CIPRESOLVE=\"domain.name\"", -1);
+        dce_emit_extended_result_code(dce, "+CIPRESOLVE=\"domain.name\"", -1, 1);
         return DCE_OK;
     }
     if (argc != 1 ||
@@ -125,6 +125,57 @@ dce_result_t SECTION_ATTR ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int 
     {
         ip_resolve_callback(hostname, &addr, group_ctx);
     }
+    return DCE_OK;
+}
+
+dce_result_t SECTION_ATTR ip_handle_CIPSTAT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
+{
+    if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CIPSTAT", -1, 1);
+        return DCE_OK;
+    }
+    if (argc > 0)
+    {
+        DCE_DEBUG("invalid arguments");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_RC_OK;
+    }
+    static const char* type_names[] = {"UNUSED", "CREATED", "CLIENT", "SERVER"};
+    char line[128];
+    ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
+    ip_connection_t* pconn = ip_ctx->connections;
+    for (int index = 0; index < MAX_ESP_CONNECTIONS; ++index, ++pconn)
+    {
+        const char* type = type_names[pconn->type];
+        int length = os_sprintf(line, "%d,%s", index, type);
+        if (pconn->type >= CREATED)
+        {
+            length += os_sprintf(line + length, ",%d(%d)", pconn->rx_buffer_pos, pconn->rx_buffer_size);
+        }
+        if (pconn->type > CREATED)
+        {
+            enum espconn_type protocol = pconn->connection->type;
+            const char* protocol_name;
+            if (protocol == ESPCONN_TCP)
+                protocol_name = "TCP";
+            else
+                protocol_name = "UDP";
+            
+            esp_tcp* desc = pconn->connection->proto.tcp;
+            length += os_sprintf(line + length, ",%s,%d,%d.%d.%d.%d,%d",
+                                 protocol_name,
+                                 desc->local_port,
+                                 desc->remote_ip[0], desc->remote_ip[1], desc->remote_ip[2], desc->remote_ip[3],
+                                 desc->remote_port
+                                 );
+        }
+        if (index == 0)
+            dce_emit_information_response(dce, line, length);
+        else
+            dce_continue_information_response(dce, line, length);
+    }
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 

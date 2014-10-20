@@ -15,5 +15,6 @@ dce_result_t ip_handle_CIPAP(dce_t* dce, void* group_ctx, int kind, size_t argc,
 dce_result_t ip_handle_CIPSTAMAC(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 dce_result_t ip_handle_CIPAPMAC(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 dce_result_t ip_handle_CIPRESOLVE(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
+dce_result_t ip_handle_CIPSTAT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv);
 
 #endif//IP_COMMANDS_INFO
