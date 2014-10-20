@@ -456,5 +456,6 @@ dce_result_t SECTION_ATTR dce_handle_input(dce_t* ctx, const char* cmd, size_t s
 void SECTION_ATTR dce_uninit(dce_t* ctx)
 {
     free(ctx->rx_buffer);
+    free(ctx->command_line_buf);
     free(ctx);
 }
