@@ -20,11 +20,14 @@ What works so far:
   - Wifi connection status reports (+CWSTAT:)
   - Commands to get IP and MAC address for AP and STA (CIPAP?, CIPSTA?, CIPAPMAC?, CIPSTAMAC?)
   - Domain names resolution (CIPRESOLVE)
+  - TCP/UDP socket context create/release (CIPCREATE, CIPCLOSE)
+  - TCP/UDP client connect/disconnect (CIPCONNECT, CIPDISCONNECT)
+  - Send/receive data (CIPSENDI, CIPRD)
 
 Next up:
-  - Transitions between data mode and command mode
-  - Implement all the IP related commands for ESP
-  - MQTT?
+  - TCP/UDP server
+  - MQTT
+  - Pass-through mode for TCP/UDP connections
   - More unit tests
   - Handling of malformed input (besides returning ERROR)
   - DTE part of the business
