@@ -134,7 +134,7 @@ void ip_tcp_connect_callback(struct espconn* connection)
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     DCE_DEBUG("connect callback");
     arg_t res = {ARG_TYPE_NUMBER, .value.number = arg->index};
-    dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPCONNECT", -1, &res, 1, 1);
+    dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPCONNECT", -1, &res, 1, 0);
 }
 
 void ip_tcp_disconnect_callback(struct espconn* connection)
@@ -142,7 +142,7 @@ void ip_tcp_disconnect_callback(struct espconn* connection)
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     arg->type = CREATED;
     arg_t res = {ARG_TYPE_NUMBER, .value.number = arg->index};
-    dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDISCONNECT", -1, &res, 1, 1);
+    dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDISCONNECT", -1, &res, 1, 0);
 }
 
 void ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
@@ -155,9 +155,13 @@ void ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPRECONNECT", -1, res, 2, 0);
 }
 
+static ip_ctx_t* s_tcp_accept_context = 0;
+
 void ip_tcp_accept_callback(struct espconn* connection)
 {
-    
+    int port = connection->proto.tcp->local_port;
+    int rev = (int) connection->reverse;
+    DCE_DEBUGV("ip_tcp_accept_callback, local_port=%d, rev=%d", port, rev);
 }
 
 dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
@@ -216,7 +220,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int 
         espconn_regist_disconcb(connection,  (espconn_connect_callback) &ip_tcp_disconnect_callback);
     }
     espconn_connect(connection);
-    
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 
@@ -246,6 +250,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPDISCONNECT(dce_t* dce, void* group_ctx, i
     }
     struct espconn* connection = ctx->connections[index].connection;
     espconn_disconnect(connection);
+    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
 
@@ -275,7 +280,13 @@ dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int k
     struct espconn* connection = ctx->connections[index].connection;
 
     int server_timeout = 20000;
-    espconn_regist_connectcb(connection, (espconn_connect_callback) &ip_tcp_accept_callback);
+    if (connection->type == ESPCONN_TCP)
+        espconn_regist_connectcb(connection, (espconn_connect_callback) &ip_tcp_accept_callback);
+    else
+        espconn_regist_recvcb(connection, (espconn_recv_callback) &ip_recv_callback);
+    
+    s_tcp_accept_context = ctx;
+    
     espconn_accept(connection);
     espconn_regist_time(connection, server_timeout, 0);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
