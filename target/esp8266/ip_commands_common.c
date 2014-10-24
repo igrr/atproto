@@ -11,78 +11,133 @@
 
 void SECTION_ATTR ip_ctx_init(ip_ctx_t* ip_ctx)
 {
-    memset(ip_ctx->connections, 0, sizeof(ip_ctx->connections));
+    memset(ip_ctx, 0, sizeof(ip_ctx_t));
     ip_connection_t* arg = ip_ctx->connections;
     for (int i = 0; i < MAX_ESP_CONNECTIONS; ++i, ++arg)
     {
         arg->ctx = ip_ctx;
-        arg->type = UNUSED;
-        arg->server_index = -1;
         arg->index = i;
     }
+    ip_ctx->tcp_server.ctx = ip_ctx;
+    ip_ctx->udp_server.ctx = ip_ctx;
 }
 
 int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx,
-                                struct espconn* con, enum espconn_type protocol,
+                                struct espconn* existing_conn, enum espconn_type protocol,
                                 size_t rx_buffer_size)
 {
-    ip_connection_t* pconn = ctx->connections;
+    ip_connection_t* connection = ctx->connections;
     int i;
-    for (i = 0; i < MAX_ESP_CONNECTIONS && pconn->type != UNUSED; ++i, ++pconn) {}
+    for (i = 0; i < MAX_ESP_CONNECTIONS && !connection->conn; ++i, ++connection) {}
     if (i == MAX_ESP_CONNECTIONS)
         return -1;
     
-    if (!con)
+    if (!existing_conn)
     {
-        pconn->connection = (struct espconn*) malloc(sizeof(struct espconn));
-        memset(pconn->connection, 0, sizeof(struct espconn));
+        connection->conn = (struct espconn*) malloc(sizeof(struct espconn));
+        memset(connection->conn, 0, sizeof(struct espconn));
     }
     else
     {
-        pconn->connection = con;
+        connection->conn = existing_conn;
     }
-    pconn->connection->reverse = pconn;
+    connection->conn->reverse = connection;
     
     if (protocol == ESPCONN_TCP)
     {
-        pconn->connection->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
+        connection->conn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
     }
     else
     {
-        pconn->connection->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+        connection->conn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
     }
-    pconn->connection->type = protocol;
-    pconn->type = CREATED;
-    pconn->rx_buffer_size = rx_buffer_size;
-    pconn->rx_buffer_pos = 0;
-    pconn->rx_buffer = (char*) malloc(pconn->rx_buffer_size);
+    connection->conn->type = protocol;
+    connection->rx_buffer_size = rx_buffer_size;
+    connection->rx_buffer_pos = 0;
+    connection->rx_buffer = (char*) malloc(connection->rx_buffer_size);
     
     return i;
 }
 
 void  SECTION_ATTR ip_espconn_release(ip_ctx_t* ctx, int index)
 {
-    ip_connection_t* conn = ctx->connections + index;
-    free(conn->connection->proto.tcp);
-    free(conn->connection);
-    conn->connection = 0;
-    free(conn->rx_buffer);
-    conn->rx_buffer = 0;
-    conn->type = UNUSED;
+    ip_connection_t* connection = ctx->connections + index;
+    free(connection->conn->proto.tcp);
+    free(connection->conn);
+    connection->conn = 0;
+    free(connection->rx_buffer);
+    connection->rx_buffer = 0;
 }
 
+ip_tcp_server_t* ip_tcp_server_create(ip_ctx_t* ctx)
+{
+    if (ctx->tcp_server.conn)
+        DCE_FAIL("tcp server already created");
+    
+    ip_tcp_server_t* server = &ctx->tcp_server;
+    server->clients_count = 0;
+    server->conn = (struct espconn*) malloc(sizeof(struct espconn));
+    memset(server->conn, 0, sizeof(struct espconn));
+    server->conn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
+    memset(server->conn->proto.tcp, 0, sizeof(esp_tcp));
+    server->conn->type = ESPCONN_TCP;
+    server->conn->reverse = server;
+    return server;
+}
+
+void ip_tcp_server_release(ip_ctx_t* ctx)
+{
+    if (!ctx->tcp_server.conn)
+        DCE_FAIL("tcp server already released");
+    
+    ip_tcp_server_t* server = &ctx->tcp_server;
+    free(server->conn->proto.tcp);
+    free(server->conn);
+    server->conn = 0;
+}
+
+ip_udp_server_t* ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
+{
+    ip_udp_server_t* server = &ctx->udp_server;
+    if (server->conn)
+        DCE_FAIL("udp server already created");
+    
+    server->conn = (struct espconn*) malloc(sizeof(struct espconn));
+    memset(server->conn, 0, sizeof(struct espconn));
+    server->conn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+    memset(server->conn->proto.tcp, 0, sizeof(esp_tcp));
+    server->conn->type = ESPCONN_UDP;
+    server->conn->reverse = server;
+    server->rx_buffer_size = rx_buffer_size;
+    server->rx_buffer_pos = 0;
+    server->rx_buffer = (char*) malloc(rx_buffer_size);
+    return server;
+
+}
+
+void ip_udp_server_release(ip_ctx_t* ctx)
+{
+    ip_udp_server_t* server = &ctx->udp_server;
+    if (!server->conn)
+        DCE_FAIL("server already released");
+    free(server->conn->proto.udp);
+    free(server->conn);
+    server->conn = 0;
+    free(server->rx_buffer);
+    server->rx_buffer = 0;
+}
 
 size_t SECTION_ATTR sprintf_ip(char* buf, uint32_t addr)
 {
     uint8_t* pip = (uint8_t*) &addr;
-    return os_sprintf(buf, "%d.%d.%d.%d",
+    return sprintf(buf, "%d.%d.%d.%d",
                       (uint32_t) pip[0], (uint32_t) pip[1],
                       (uint32_t) pip[2], (uint32_t) pip[3]);
 }
 
 size_t SECTION_ATTR sprintf_mac(char* buf, uint8_t* mac)
 {
-    return os_sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x",
+    return sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x",
                       (uint32_t) mac[0], (uint32_t) mac[1],
                       (uint32_t) mac[2], (uint32_t) mac[3],
                       (uint32_t) mac[4], (uint32_t) mac[5]);

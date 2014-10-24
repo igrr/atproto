@@ -59,11 +59,11 @@ dce_result_t SECTION_ATTR ip_handle_CIPCREATE(dce_t* dce, void* group_ctx, int k
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    ip_connection_t* pconn = ip_ctx->connections + index;
+    ip_connection_t* connection = ip_ctx->connections + index;
     if (connection_type == ESPCONN_TCP)
-        pconn->connection->proto.tcp->local_port = port;
+        connection->conn->proto.tcp->local_port = port;
     else
-        pconn->connection->proto.udp->local_port = port;
+        connection->conn->proto.udp->local_port = port;
     
     arg_t args[] = {
         {ARG_TYPE_NUMBER, .value.number=index},
@@ -89,8 +89,8 @@ dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int ki
     }
     ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
-    ip_connection_t* pconn = ip_ctx->connections + index;
-    if (pconn->type == UNUSED)
+    ip_connection_t* connection = ip_ctx->connections + index;
+    if (!connection->conn)
     {
         DCE_DEBUG("connection not in use");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
@@ -140,7 +140,6 @@ void ip_tcp_connect_callback(struct espconn* connection)
 void ip_tcp_disconnect_callback(struct espconn* connection)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
-    arg->type = CREATED;
     arg_t res = {ARG_TYPE_NUMBER, .value.number = arg->index};
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDISCONNECT", -1, &res, 1, 0);
 }
@@ -184,19 +183,19 @@ dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int 
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
     if (index >= MAX_ESP_CONNECTIONS ||
-        ctx->connections[index].type == UNUSED)
+        !ctx->connections[index].conn)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    ip_connection_t* pconn = ctx->connections + index;
-    struct espconn* connection = pconn->connection;
+    ip_connection_t* connection = ctx->connections + index;
+    struct espconn* conn = connection->conn;
     uint8_t* remote_ip;
-    if (connection->type == ESPCONN_TCP)
-        remote_ip = connection->proto.tcp->remote_ip;
+    if (conn->type == ESPCONN_TCP)
+        remote_ip = conn->proto.tcp->remote_ip;
     else
-        remote_ip = connection->proto.udp->remote_ip;
+        remote_ip = conn->proto.udp->remote_ip;
     if (dce_parse_ip(argv[1].value.string, remote_ip) != 0)
     {
         DCE_DEBUG("invalid remote IP address");
@@ -204,22 +203,20 @@ dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int 
         return DCE_OK;
     }
     
-    if (connection->type == ESPCONN_TCP)
-        connection->proto.tcp->remote_port = argv[2].value.number;
+    if (conn->type == ESPCONN_TCP)
+        conn->proto.tcp->remote_port = argv[2].value.number;
     else
-        connection->proto.udp->remote_port = argv[2].value.number;
+        conn->proto.udp->remote_port = argv[2].value.number;
     
-    pconn->type = CLIENT;
-    
-    espconn_regist_recvcb(connection, (espconn_recv_callback) &ip_recv_callback);
-    espconn_regist_sentcb(connection, (espconn_sent_callback) &ip_sent_callback);
-    if (connection->type == ESPCONN_TCP)
+    espconn_regist_recvcb(conn, (espconn_recv_callback) &ip_recv_callback);
+    espconn_regist_sentcb(conn, (espconn_sent_callback) &ip_sent_callback);
+    if (conn->type == ESPCONN_TCP)
     {
-        espconn_regist_connectcb(connection, (espconn_connect_callback) &ip_tcp_connect_callback);
-        espconn_regist_reconcb(connection, (espconn_reconnect_callback) &ip_tcp_reconnect_callback);
-        espconn_regist_disconcb(connection,  (espconn_connect_callback) &ip_tcp_disconnect_callback);
+        espconn_regist_connectcb(conn, (espconn_connect_callback) &ip_tcp_connect_callback);
+        espconn_regist_reconcb(conn, (espconn_reconnect_callback) &ip_tcp_reconnect_callback);
+        espconn_regist_disconcb(conn,  (espconn_connect_callback) &ip_tcp_disconnect_callback);
     }
-    espconn_connect(connection);
+    espconn_connect(conn);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
@@ -242,18 +239,18 @@ dce_result_t SECTION_ATTR ip_handle_CIPDISCONNECT(dce_t* dce, void* group_ctx, i
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
     if (index >= MAX_ESP_CONNECTIONS ||
-        ctx->connections[index].type == UNUSED)
+        !ctx->connections[index].conn)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    struct espconn* connection = ctx->connections[index].connection;
-    espconn_disconnect(connection);
+    struct espconn* conn = ctx->connections[index].conn;
+    espconn_disconnect(conn);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
-
+#if 0
 dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     if (kind == DCE_TEST)
@@ -292,6 +289,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int k
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
+#endif
 
 dce_result_t SECTION_ATTR ip_handle_CIPSENDI(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
@@ -312,14 +310,14 @@ dce_result_t SECTION_ATTR ip_handle_CIPSENDI(dce_t* dce, void* group_ctx, int ki
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
     if (index >= MAX_ESP_CONNECTIONS ||
-        ctx->connections[index].type == UNUSED)
+        !ctx->connections[index].conn)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    struct espconn* connection = ctx->connections[index].connection;
-    espconn_sent(connection, (uint8_t*) argv[1].value.string, strlen(argv[1].value.string));
+    struct espconn* conn = ctx->connections[index].conn;
+    espconn_sent(conn, (uint8_t*) argv[1].value.string, strlen(argv[1].value.string));
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
@@ -341,23 +339,23 @@ dce_result_t SECTION_ATTR ip_handle_CIPRD(dce_t* dce, void* group_ctx, int kind,
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
     if (index >= MAX_ESP_CONNECTIONS ||
-        ctx->connections[index].type == UNUSED)
+        !ctx->connections[index].conn)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
 
-    ip_connection_t* pconn = ctx->connections + index;
-    size_t size_to_read = pconn->rx_buffer_pos;
+    ip_connection_t* connection = ctx->connections + index;
+    size_t size_to_read = connection->rx_buffer_pos;
     
     arg_t res[] = {
         {ARG_TYPE_NUMBER, .value.number = index},
         {ARG_TYPE_NUMBER, .value.number = (int) size_to_read},
     };
     dce_emit_extended_result_code_with_args(dce, "CIPRD", -1, res, 2, 0);
-    dce_emit_information_response(dce, pconn->rx_buffer, size_to_read);
-    pconn->rx_buffer_pos -= size_to_read;
+    dce_emit_information_response(dce, connection->rx_buffer, size_to_read);
+    connection->rx_buffer_pos -= size_to_read;
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }

@@ -141,30 +141,40 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTAT(dce_t* dce, void* group_ctx, int kin
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_RC_OK;
     }
-    static const char* type_names[] = {"UNUSED", "CREATED", "CLIENT", "SERVER"};
     char line[128];
+    int length;
     ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
-    ip_connection_t* pconn = ip_ctx->connections;
-    for (int index = 0; index < MAX_ESP_CONNECTIONS; ++index, ++pconn)
+    ip_connection_t* connection = ip_ctx->connections;
+    for (int index = 0; index < MAX_ESP_CONNECTIONS; ++index, ++connection)
     {
-        const char* type = type_names[pconn->type];
-        int length = os_sprintf(line, "%d,%s", index, type);
-        if (pconn->type >= CREATED)
+        if (!connection->conn)
         {
-            length += os_sprintf(line + length, ",%d(%d)", pconn->rx_buffer_pos, pconn->rx_buffer_size);
+            length = sprintf(line, "%d,\"UNUSED\"", index);
         }
-        if (pconn->type > CREATED)
+        else
         {
-            enum espconn_type protocol = pconn->connection->type;
+            enum espconn_type protocol = connection->conn->type;
             const char* protocol_name;
             if (protocol == ESPCONN_TCP)
                 protocol_name = "TCP";
             else
                 protocol_name = "UDP";
             
-            esp_tcp* desc = pconn->connection->proto.tcp;
-            length += os_sprintf(line + length, ",%s,%d,%d.%d.%d.%d,%d",
-                                 protocol_name,
+            const char* state_names[] = {
+                "NONE",
+                "WAIT",
+                "LISTEN",
+                "CONNECT",
+                "WRITE",
+                "READ",
+                "CLOSE"
+            };
+            
+            length = sprintf(line, "%d,\"%s\",%d,%d", index, protocol_name, (int) connection->rx_buffer_pos, (int) connection->rx_buffer_size);
+            
+            esp_tcp* desc = connection->conn->proto.tcp;
+            length += sprintf(line + length, ",\"%s\",%d,%d.%d.%d.%d,%d",
+                                 state_names[connection->conn->state],
                                  desc->local_port,
                                  desc->remote_ip[0], desc->remote_ip[1], desc->remote_ip[2], desc->remote_ip[3],
                                  desc->remote_port
@@ -174,6 +184,27 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTAT(dce_t* dce, void* group_ctx, int kin
             dce_emit_information_response(dce, line, length);
         else
             dce_continue_information_response(dce, line, length);
+        
+        if (!ip_ctx->tcp_server.conn)
+        {
+            length = sprintf(line, "\"TCPSERVER\",\"UNUSED\"");
+        }
+        else
+        {
+            ip_tcp_server_t* server = &ip_ctx->tcp_server;
+            length = sprintf(line, "\"TCPSERVER\",\"LISTEN\",%d,%d", server->conn->proto.tcp->local_port, server->conn->link_cnt);
+        }
+        
+        if (!ip_ctx->udp_server.conn)
+        {
+            length = sprintf(line, "\"UDPSERVER\",\"UNUSED\"");
+        }
+        else
+        {
+            ip_udp_server_t* server = &ip_ctx->udp_server;
+            length = sprintf(line, "\"UDPSERVER\",\"LISTEN\",%d,%d,%d", server->conn->proto.tcp->local_port, (int) server->rx_buffer_pos, (int) server->rx_buffer_size);
+        }
+        
     }
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;

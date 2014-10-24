@@ -67,7 +67,7 @@ void SECTION_ATTR wifi_handle_CWLAP_scan_complete(void* result, STATUS status)
     int i = 0;
     for (struct bss_info* it = (struct bss_info*) result; it; it = STAILQ_NEXT(it, next), ++i)
     {
-        int length = os_sprintf(line, "%d,\"%s\",%d", it->authmode, it->ssid, it->rssi);
+        int length = sprintf(line, "%d,\"%s\",%d", it->authmode, it->ssid, it->rssi);
         if (i == 0)
             dce_emit_information_response(dce, line, length);
         else
@@ -256,7 +256,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWLIF(dce_t* dce, void* group_ctx, int kin
         uint8_t* ip = (uint8_t*) &(station->ip.addr);
         uint8_t* mac = station->bssid;
         
-        size_t len = os_sprintf(buf, "%d.%d.%d.%d,%02x:%02x:%02x:%02x:%02x:%02x",
+        size_t len = sprintf(buf, "%d.%d.%d.%d,%02x:%02x:%02x:%02x:%02x:%02x",
                                 (uint32_t) ip[0], (uint32_t) ip[1], (uint32_t) ip[2], (uint32_t) ip[3],
                                 (uint32_t) mac[0], (uint32_t) mac[1],
                                 (uint32_t) mac[2], (uint32_t) mac[3],

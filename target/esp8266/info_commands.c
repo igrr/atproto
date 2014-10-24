@@ -28,7 +28,7 @@ dce_result_t SECTION_ATTR dce_handle_GSN(dce_t* dce, void* group_ctx, int kind, 
 {
     uint32_t chip_id = system_get_chip_id();
     char buf[10];
-    os_sprintf(buf, "%08x", chip_id);
+    sprintf(buf, "%08x", chip_id);
     dce_emit_information_response(dce, buf, -1);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
@@ -37,7 +37,7 @@ dce_result_t SECTION_ATTR dce_handle_GSN(dce_t* dce, void* group_ctx, int kind, 
 dce_result_t SECTION_ATTR dce_handle_GMEM(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     char line[12];
-    int length = os_sprintf(line, "%d", system_get_free_heap_size());
+    int length = sprintf(line, "%d", system_get_free_heap_size());
     dce_emit_information_response(dce, line, length);
 
     int debug_enabled = uart_get_debug();

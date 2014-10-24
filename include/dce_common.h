@@ -23,6 +23,7 @@
 #define malloc os_malloc
 #define free os_free
 #define eprintf os_printf
+#define sprintf os_sprintf
 #else
 #include <stdint.h>
 #include <string.h>
