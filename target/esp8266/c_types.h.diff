@@ -1,0 +1,30 @@
+7a8
+> #include <stdint.h>
+9c10
+< typedef unsigned char       uint8_t;
+---
+> // typedef unsigned char       uint8_t;
+11,12c12,13
+< typedef signed char         int8_t;
+< typedef unsigned short      uint16_t;
+---
+> // typedef signed char         int8_t;
+> // typedef unsigned short      uint16_t;
+14,15c15,16
+< typedef signed short        int16_t;
+< typedef unsigned long       uint32_t;
+---
+> // typedef signed short        int16_t;
+> // typedef unsigned long       uint32_t;
+17c18
+< typedef signed long         int32_t;
+---
+> // typedef signed long         int32_t;
+19c20
+< typedef unsigned long long  uint64_t;
+---
+> // typedef unsigned long long  uint64_t;
+47c48
+< typedef unsigned int        size_t;
+---
+> //typedef unsigned int        size_t;

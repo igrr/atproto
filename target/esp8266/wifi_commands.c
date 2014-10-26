@@ -95,7 +95,8 @@ dce_result_t SECTION_ATTR wifi_handle_CWLAP(dce_t* dce, void* group_ctx, int kin
         wifi_station_disconnect();
     }
     s_wifi_scan_context.wifi_ctx = (wifi_ctx_t*) group_ctx;
-    wifi_station_scan(&wifi_handle_CWLAP_scan_complete);
+    struct scan_config config = { .ssid=0, .bssid=0, .channel=0 };
+    wifi_station_scan(&config, &wifi_handle_CWLAP_scan_complete);
     return DCE_OK;
 }
 

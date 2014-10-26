@@ -21,7 +21,7 @@ XTENSA_LIBS := ../RC-2010.1-linux/lx106/xtensa-elf
 
 ESPTOOL := ../esptool/esptool
 
-SDK_BASE := ../esp8266_sdk_v0.9.1
+SDK_BASE := ../esp_iot_sdk_v0.9.2
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
 

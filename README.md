@@ -46,25 +46,9 @@ Make
 #### ESP8266
 
 - Install/compile the toolchain. Check the ESP8266 community wiki for [instructions](https://github.com/esp8266/esp8266-wiki/wiki/Toolchain).
-- Get ESP8266 SDK somewhere, 0.9.1 is the one I use.
+- Get the [ESP8266 SDK] version 0.9.2.
 - Adjust `XTENSA_TOOCHAIN`, `XTENSA_LIBS`, `SDK_BASE`, `ESPTOOL` directories in target/esp8266/target.mk
-- Apply the following diff to include/c_types.h so that it doesn't redefine types from stdint.h:
-
-  ```
-  8c8,9
-  < 
-  ---
-  > #include <stdint.h>
-  > #if 0
-  19a21
-  > #endif
-  47c49,50
-  < typedef unsigned int        size_t;
-  ---
-  > //typedef unsigned int        size_t;
-  > 
-  ```
-
+- Apply the diff in target/esp8266/c_types.h.diff to include/c_types.h in the SDK so that it doesn't redefine types from stdint.h.
 - Run ```make clean all TARGET=esp8266```
 - The firmware will be generated in bin/0x00000.bin and bin/0x40000.bin
 
@@ -84,4 +68,6 @@ I use [Catch] for unit tests (it's in include/catch.hpp), see header for it's ow
 [Catch]:https://github.com/philsquared/Catch
 [prebuilt binaries]:http://th.igrr.me
 [LwIP]:http://savannah.nongnu.org/projects/lwip/
+[ESP8266 SDK]:http://bbs.espressif.com/viewtopic.php?f=5&t=3
+
 

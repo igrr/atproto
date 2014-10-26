@@ -9,21 +9,24 @@
 #include "dce_private.h"
 #include "config_store.h"
 #include "user_interface.h"
+#include "spi_flash.h"
 
-#define CONFIG_SECTOR 0
+#define CONFIG_START_SECTOR 0x3C
+#define CONFIG_SECTOR (CONFIG_START_SECTOR + 0)
+#define CONFIG_ADDR (SPI_FLASH_SEC_SIZE * CONFIG_SECTOR)
 
 static config_t s_config;
 static int s_config_loaded = 0;
 
 void ICACHE_FLASH_ATTR config_read(config_t* config)
 {
-    load_user_param(CONFIG_SECTOR, 0, config, sizeof(config_t));
+    spi_flash_read(CONFIG_ADDR, (uint32_t*) config, sizeof(config_t));
 }
 
 void ICACHE_FLASH_ATTR config_write(config_t* config)
 {
-    erase_user_param(CONFIG_SECTOR);
-    save_user_param(CONFIG_SECTOR, 0, config, sizeof(config_t));
+    spi_flash_erase_sector(CONFIG_SECTOR);
+    spi_flash_write(CONFIG_ADDR, (uint32_t*) config, sizeof(config_t));
 }
 
 config_t* ICACHE_FLASH_ATTR config_get()
