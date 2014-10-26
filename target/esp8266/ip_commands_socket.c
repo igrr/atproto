@@ -14,7 +14,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCREATE(dce_t* dce, void* group_ctx, int k
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPCREATE=\"TCP|UDP\"[,port][,buffer_size]", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPCREATE:\"TCP|UDP\"[,port][,buffer_size]", -1, 1);
         return DCE_OK;
     }
     
@@ -78,7 +78,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int ki
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPCLOSE=<index>", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPCLOSE:(0-6)", -1, 1);
         return DCE_OK;
     }
     if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER)
@@ -89,14 +89,24 @@ dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int ki
     }
     ip_ctx_t* ip_ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
-    ip_connection_t* connection = ip_ctx->connections + index;
-    if (!connection->conn)
+    if (index < MAX_ESP_CONNECTIONS && ip_ctx->connections[index].conn)
+    {
+        ip_espconn_release(ip_ctx, index);
+    }
+    else if (index == TCP_SERVER_INDEX)
+    {
+        ip_tcp_server_release(ip_ctx);
+    }
+    else if (index == UDP_SERVER_INDEX)
+    {
+        ip_udp_server_release(ip_ctx);
+    }
+    else
     {
         DCE_DEBUG("connection not in use");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    ip_espconn_release(ip_ctx, index);
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_RC_OK;
 }
@@ -167,7 +177,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCONNECT(dce_t* dce, void* group_ctx, int 
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPCONNECT=<index>,\"ip_addr\",<remote_port>", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPCONNECT:(0-4),\"ip_addr\",(1-65535)", -1, 1);
         return DCE_OK;
     }
     if (argc != 3 ||
@@ -225,7 +235,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPDISCONNECT(dce_t* dce, void* group_ctx, i
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPDISCONNECT=<index>", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPDISCONNECT:(0-4)", -1, 1);
         return DCE_OK;
     }
     if (argc != 1 ||
@@ -250,46 +260,104 @@ dce_result_t SECTION_ATTR ip_handle_CIPDISCONNECT(dce_t* dce, void* group_ctx, i
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
-#if 0
+
 dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPLISTEN=<index>", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPLISTEN:\"TCP|UDP\"[,port][,buffer_size]", -1, 1);
         return DCE_OK;
     }
-    if (argc != 1 ||
-        argv[0].type != ARG_TYPE_NUMBER)
+    if (argc == 0 ||
+        argv[0].type != ARG_TYPE_STRING ||
+        (argc >= 2 && argv[1].type != ARG_TYPE_NUMBER && argv[1].type != ARG_NOT_SPECIFIED) ||
+        (argc == 3 && argv[2].type != ARG_TYPE_NUMBER && argv[2].type != ARG_NOT_SPECIFIED) ||
+        argc > 3)
     {
-        DCE_DEBUG("invalid arguments");
+        DCE_DEBUG("invalid args");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
-    int index = argv[0].value.number;
-    if (index >= MAX_ESP_CONNECTIONS ||
-        ctx->connections[index].type == UNUSED)
-    {
-        DCE_DEBUG("invalid connection index");
-        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
-        return DCE_OK;
-    }
-    struct espconn* connection = ctx->connections[index].connection;
-
-    int server_timeout = 20000;
-    if (connection->type == ESPCONN_TCP)
-        espconn_regist_connectcb(connection, (espconn_connect_callback) &ip_tcp_accept_callback);
+    
+    enum espconn_type connection_type = ESPCONN_INVALID;
+    if (strcmp("TCP", argv[0].value.string) == 0)
+        connection_type = ESPCONN_TCP;
+    else if (strcmp("UDP", argv[0].value.string) == 0)
+        connection_type = ESPCONN_UDP;
     else
+    {
+        DCE_DEBUG("invalid protocol");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    
+    if (connection_type == ESPCONN_TCP && argc == 3)
+    {
+        DCE_DEBUG("TCP server has no buffer_size argument");
+        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+    
+    int port;
+    if (argc == 2 && argv[1].type == ARG_TYPE_NUMBER)
+        port = argv[1].value.number;
+    else
+        port = espconn_port();
+    
+    int rx_buffer_size = DEFAULT_RX_BUFFER_SIZE;
+    if (argc == 3 && argv[2].type == ARG_TYPE_NUMBER)
+        rx_buffer_size = argv[2].value.number;
+
+    ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
+    
+    int server_timeout = 20000;
+    struct espconn* connection = 0;
+    int index = -1;
+    if (connection_type == ESPCONN_TCP)
+    {
+        ip_tcp_server_t* server = ip_tcp_server_create(ctx);
+        if (!server || !server->conn)
+        {
+            DCE_DEBUG("TCP server already in use");
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+            return DCE_OK;
+        }
+        struct espconn* connection = server->conn;
+        s_tcp_accept_context = ctx;
+        connection->proto.tcp->local_port = port;
+        connection->state = ESPCONN_NONE;
+        index = TCP_SERVER_INDEX;
+        espconn_regist_connectcb(connection, (espconn_connect_callback) &ip_tcp_accept_callback);
+    }
+    else
+    {
+        ip_udp_server_t* server = ip_udp_server_create(ctx, rx_buffer_size);
+        if (!server || !server->conn)
+        {
+            DCE_DEBUG("UDP server already in use");
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+            return DCE_OK;
+        }
+        struct espconn* connection = server->conn;
+        connection->proto.udp->local_port = port;
+        connection->state = ESPCONN_NONE;
+        index = UDP_SERVER_INDEX;
         espconn_regist_recvcb(connection, (espconn_recv_callback) &ip_recv_callback);
-    
-    s_tcp_accept_context = ctx;
-    
+    }
     espconn_accept(connection);
-    espconn_regist_time(connection, server_timeout, 0);
-    dce_emit_basic_result_code(dce, DCE_RC_OK);
+    if (connection_type == ESPCONN_TCP)
+    {
+        espconn_regist_time(connection, server_timeout, 0);
+    }
+    arg_t args[] = {
+        {ARG_TYPE_NUMBER, .value.number = index},
+        {ARG_TYPE_NUMBER, .value.number = port},
+        {ARG_TYPE_NUMBER, .value.number = rx_buffer_size},
+    };
+    size_t argsc = (connection_type == ESPCONN_UDP) ? 3 : 2;
+    dce_emit_extended_result_code_with_args(dce, "CIPLISTEN", -1, args, argsc, 1);
     return DCE_OK;
 }
-#endif
 
 dce_result_t SECTION_ATTR ip_handle_CIPSENDI(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)
 {
@@ -309,14 +377,18 @@ dce_result_t SECTION_ATTR ip_handle_CIPSENDI(dce_t* dce, void* group_ctx, int ki
     
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
-    if (index >= MAX_ESP_CONNECTIONS ||
-        !ctx->connections[index].conn)
+    struct espconn* conn = 0;
+    if (index < MAX_ESP_CONNECTIONS)
+        conn = ctx->connections[index].conn;
+    else if (index == UDP_SERVER_INDEX)
+        conn = ctx->udp_server.conn;
+    if (!conn)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    struct espconn* conn = ctx->connections[index].conn;
+    
     espconn_sent(conn, (uint8_t*) argv[1].value.string, strlen(argv[1].value.string));
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
@@ -338,15 +410,19 @@ dce_result_t SECTION_ATTR ip_handle_CIPRD(dce_t* dce, void* group_ctx, int kind,
     
     ip_ctx_t* ctx = (ip_ctx_t*) group_ctx;
     int index = argv[0].value.number;
-    if (index >= MAX_ESP_CONNECTIONS ||
-        !ctx->connections[index].conn)
+    ip_connection_t* connection;
+    if (index < MAX_ESP_CONNECTIONS && ctx->connections[index].conn)
+        connection = ctx->connections + index;
+    else if (index == UDP_SERVER_INDEX && ctx->udp_server.conn)
+        connection = &ctx->udp_server;
+
+    if (!connection)
     {
         DCE_DEBUG("invalid connection index");
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
 
-    ip_connection_t* connection = ctx->connections + index;
     size_t size_to_read = connection->rx_buffer_pos;
     
     arg_t res[] = {

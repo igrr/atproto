@@ -26,6 +26,7 @@ static const command_desc_t commands[] = {
     { "CIPSTAT",        &ip_handle_CIPSTAT,         DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPRESOLVE",     &ip_handle_CIPRESOLVE,      DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPCREATE",      &ip_handle_CIPCREATE,       DCE_ACTION | DCE_EXEC | DCE_TEST },
+    { "CIPLISTEN",      &ip_handle_CIPLISTEN,       DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPCLOSE",       &ip_handle_CIPCLOSE,        DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPCONNECT",     &ip_handle_CIPCONNECT,      DCE_ACTION | DCE_EXEC | DCE_TEST },
     { "CIPDISCONNECT",  &ip_handle_CIPDISCONNECT,   DCE_ACTION | DCE_EXEC | DCE_TEST },

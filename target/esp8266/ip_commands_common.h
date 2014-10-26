@@ -14,7 +14,8 @@
 
 #define MAX_ESP_CONNECTIONS 5
 #define DEFAULT_RX_BUFFER_SIZE 2048
-
+#define UDP_SERVER_INDEX (MAX_ESP_CONNECTIONS + 0)
+#define TCP_SERVER_INDEX (MAX_ESP_CONNECTIONS + 1)
 typedef struct ip_ctx_ ip_ctx_t;
 
 typedef struct {
@@ -39,8 +40,9 @@ typedef struct {
 struct ip_ctx_ {
     dce_t* dce;
     ip_connection_t connections[MAX_ESP_CONNECTIONS];
-    ip_tcp_server_t tcp_server;
     ip_udp_server_t udp_server;
+    ip_tcp_server_t tcp_server;
+
 };
 
 

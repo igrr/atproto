@@ -17,6 +17,7 @@ void SECTION_ATTR ip_ctx_init(ip_ctx_t* ip_ctx)
     {
         arg->ctx = ip_ctx;
         arg->index = i;
+        arg->conn = 0;
     }
     ip_ctx->tcp_server.ctx = ip_ctx;
     ip_ctx->udp_server.ctx = ip_ctx;
@@ -28,7 +29,7 @@ int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx,
 {
     ip_connection_t* connection = ctx->connections;
     int i;
-    for (i = 0; i < MAX_ESP_CONNECTIONS && !connection->conn; ++i, ++connection) {}
+    for (i = 0; i < MAX_ESP_CONNECTIONS && connection->conn; ++i, ++connection) {}
     if (i == MAX_ESP_CONNECTIONS)
         return -1;
     
@@ -72,7 +73,7 @@ void  SECTION_ATTR ip_espconn_release(ip_ctx_t* ctx, int index)
 ip_tcp_server_t* ip_tcp_server_create(ip_ctx_t* ctx)
 {
     if (ctx->tcp_server.conn)
-        DCE_FAIL("tcp server already created");
+        return 0;
     
     ip_tcp_server_t* server = &ctx->tcp_server;
     server->clients_count = 0;
@@ -82,13 +83,14 @@ ip_tcp_server_t* ip_tcp_server_create(ip_ctx_t* ctx)
     memset(server->conn->proto.tcp, 0, sizeof(esp_tcp));
     server->conn->type = ESPCONN_TCP;
     server->conn->reverse = server;
+    server->index = TCP_SERVER_INDEX;
     return server;
 }
 
 void ip_tcp_server_release(ip_ctx_t* ctx)
 {
     if (!ctx->tcp_server.conn)
-        DCE_FAIL("tcp server already released");
+        return;
     
     ip_tcp_server_t* server = &ctx->tcp_server;
     free(server->conn->proto.tcp);
@@ -100,7 +102,7 @@ ip_udp_server_t* ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
 {
     ip_udp_server_t* server = &ctx->udp_server;
     if (server->conn)
-        DCE_FAIL("udp server already created");
+        return 0;
     
     server->conn = (struct espconn*) malloc(sizeof(struct espconn));
     memset(server->conn, 0, sizeof(struct espconn));
@@ -111,6 +113,7 @@ ip_udp_server_t* ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
     server->rx_buffer_size = rx_buffer_size;
     server->rx_buffer_pos = 0;
     server->rx_buffer = (char*) malloc(rx_buffer_size);
+    server->index = UDP_SERVER_INDEX;
     return server;
 
 }
@@ -119,7 +122,8 @@ void ip_udp_server_release(ip_ctx_t* ctx)
 {
     ip_udp_server_t* server = &ctx->udp_server;
     if (!server->conn)
-        DCE_FAIL("server already released");
+        return;
+    
     free(server->conn->proto.udp);
     free(server->conn);
     server->conn = 0;

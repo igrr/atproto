@@ -184,28 +184,30 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTAT(dce_t* dce, void* group_ctx, int kin
             dce_emit_information_response(dce, line, length);
         else
             dce_continue_information_response(dce, line, length);
-        
-        if (!ip_ctx->tcp_server.conn)
-        {
-            length = sprintf(line, "\"TCPSERVER\",\"UNUSED\"");
-        }
-        else
-        {
-            ip_tcp_server_t* server = &ip_ctx->tcp_server;
-            length = sprintf(line, "\"TCPSERVER\",\"LISTEN\",%d,%d", server->conn->proto.tcp->local_port, server->conn->link_cnt);
-        }
-        
-        if (!ip_ctx->udp_server.conn)
-        {
-            length = sprintf(line, "\"UDPSERVER\",\"UNUSED\"");
-        }
-        else
-        {
-            ip_udp_server_t* server = &ip_ctx->udp_server;
-            length = sprintf(line, "\"UDPSERVER\",\"LISTEN\",%d,%d,%d", server->conn->proto.tcp->local_port, (int) server->rx_buffer_pos, (int) server->rx_buffer_size);
-        }
-        
     }
+    
+    if (!ip_ctx->udp_server.conn)
+    {
+        length = sprintf(line, "%d,\"UNUSED\"", UDP_SERVER_INDEX);
+    }
+    else
+    {
+        ip_udp_server_t* server = &ip_ctx->udp_server;
+        length = sprintf(line, "%d,\"UDP,LISTEN\",%d,%d,%d", UDP_SERVER_INDEX, server->conn->proto.tcp->local_port, (int) server->rx_buffer_pos, (int) server->rx_buffer_size);
+    }
+    dce_continue_information_response(dce, line, length);
+    
+    if (!ip_ctx->tcp_server.conn)
+    {
+        length = sprintf(line, "%d,\"UNUSED\"", TCP_SERVER_INDEX);
+    }
+    else
+    {
+        ip_tcp_server_t* server = &ip_ctx->tcp_server;
+        length = sprintf(line, "%d,\"TCP,LISTEN\",%d,%d", TCP_SERVER_INDEX, server->conn->proto.tcp->local_port, server->conn->link_cnt);
+    }
+    dce_continue_information_response(dce, line, length);
+
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
