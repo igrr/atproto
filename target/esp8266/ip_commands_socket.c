@@ -111,7 +111,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCLOSE(dce_t* dce, void* group_ctx, int ki
     return DCE_RC_OK;
 }
 
-void ip_recv_callback(struct espconn* connection, char *pdata, unsigned short len)
+void SECTION_ATTR ip_recv_callback(struct espconn* connection, char *pdata, unsigned short len)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     size_t size_to_copy = len;
@@ -132,14 +132,14 @@ void ip_recv_callback(struct espconn* connection, char *pdata, unsigned short le
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDR", -1, args, 2, 0);
 }
 
-void ip_sent_callback(struct espconn* connection)
+void SECTION_ATTR ip_sent_callback(struct espconn* connection)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     arg_t res = {ARG_TYPE_NUMBER, .value.number = arg->index};
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPSENDI", -1, &res, 1, 0);
 }
 
-void ip_tcp_connect_callback(struct espconn* connection)
+void SECTION_ATTR ip_tcp_connect_callback(struct espconn* connection)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     DCE_DEBUG("connect callback");
@@ -147,14 +147,14 @@ void ip_tcp_connect_callback(struct espconn* connection)
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPCONNECT", -1, &res, 1, 0);
 }
 
-void ip_tcp_disconnect_callback(struct espconn* connection)
+void SECTION_ATTR ip_tcp_disconnect_callback(struct espconn* connection)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     arg_t res = {ARG_TYPE_NUMBER, .value.number = arg->index};
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDISCONNECT", -1, &res, 1, 0);
 }
 
-void ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
+void SECTION_ATTR ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     arg_t res[] = {
@@ -166,7 +166,7 @@ void ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
 
 static ip_ctx_t* s_tcp_accept_context = 0;
 
-void ip_tcp_accept_callback(struct espconn* connection)
+void SECTION_ATTR ip_tcp_accept_callback(struct espconn* connection)
 {
     int port = connection->proto.tcp->local_port;
     int rev = (int) connection->reverse;
