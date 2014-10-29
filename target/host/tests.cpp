@@ -202,3 +202,29 @@ TEST_CASE("can reset dce even if command is pending", "[dce]")
     dce_uninit(dce);
 }
 
+typedef std::function<void(int)> func_t;
+
+typedef struct {
+    const char* name;
+    func_t func;
+} stage_t;
+
+void tcp_connect(int32_t ip, int16_t port) { }
+
+
+void on_connect(void* ctx)
+{
+    
+}
+
+TEST_CASE("continuations for mqtt")
+{
+    stage_t stages[] = {
+        {"connect", [&](int) {
+            uint8_t ip[] = {192, 168, 0, 1};
+            tcp_connect( *((int32_t*) ip), 54002 );
+            
+        }}
+    };
+}
+

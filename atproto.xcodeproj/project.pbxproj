@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A15417A41A017B6D00D448B4 /* mqtt_client.c in Sources */ = {isa = PBXBuildFile; fileRef = A1438C3219F6E24200E40B50 /* mqtt_client.c */; };
 		A18881D819EDC4C000286BF7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A18881D719EDC4C000286BF7 /* README.md */; };
 		A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32119DC812100E94BBC /* dce_basic_commands.c */; };
 		A1EEC32A19DC812100E94BBC /* dce.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32419DC812100E94BBC /* dce.c */; };
@@ -245,6 +246,7 @@
 			files = (
 				A1EEC37F19DD7F7B00E94BBC /* tests.cpp in Sources */,
 				A1EEC37E19DD7F7B00E94BBC /* dce_test_commands.c in Sources */,
+				A15417A41A017B6D00D448B4 /* mqtt_client.c in Sources */,
 				A1EEC37D19DD7F7B00E94BBC /* test_dce_utils.cpp in Sources */,
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
 				A1EEC32A19DC812100E94BBC /* dce.c in Sources */,

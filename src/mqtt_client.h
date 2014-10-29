@@ -11,18 +11,18 @@
 
 #include <stdint.h>
 
-typedef struct mqttc_ mqttc_t;
-
 typedef void(*mqttc_callback_t)(void*, int, const char*, int);
+
+typedef struct mqttc_ mqttc_t;
 
 mqttc_t* mqttc_create(mqttc_callback_t callback, void* callback_arg);
 void mqttc_release(mqttc_t* client);
-void mqttc_set_will(const char* topic, const char* payload, int qos, int retain);
-void mqttc_set_auth(const char* user, const char* password);
-void mqttc_connect(uint32_t ip, int port);
-void mqttc_disconnect();
-void mqttc_publish(const char* topic, const char* payload, size_t payload_size, int retain);
-void mqttc_subscribe(const char* topic, int qos);
-void mqttc_unsubscribe(const char* topic);
+void mqttc_set_will(mqttc_t* client, const char* topic, const char* payload, int qos, int retain);
+void mqttc_set_auth(mqttc_t* client, const char* user, const char* password);
+void mqttc_connect(mqttc_t* client, uint32_t ip, int port);
+void mqttc_disconnect(mqttc_t* client);
+void mqttc_publish(mqttc_t* client, const char* topic, const char* payload, size_t payload_size, int retain);
+void mqttc_subscribe(mqttc_t* client, const char* topic, int qos);
+void mqttc_unsubscribe(mqttc_t* client, const char* topic);
 
 #endif//MQTT_CLIENT_H
