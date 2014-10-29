@@ -44,6 +44,7 @@
 		A155472619E57C4200E6425A /* info_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info_commands.h; path = target/esp8266/info_commands.h; sourceTree = "<group>"; };
 		A155472819E68D5800E6425A /* wifi_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wifi_commands.c; path = target/esp8266/wifi_commands.c; sourceTree = "<group>"; };
 		A155472919E68D5800E6425A /* wifi_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wifi_commands.h; path = target/esp8266/wifi_commands.h; sourceTree = "<group>"; };
+		A160F75A19FEECB40034DCFA /* lwip */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lwip; sourceTree = "<group>"; };
 		A177191F19F0F0EF00D49B9D /* ip_commands_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ip_commands_common.h; path = target/esp8266/ip_commands_common.h; sourceTree = "<group>"; };
 		A177192019F0F17100D49B9D /* ip_commands_common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ip_commands_common.c; path = target/esp8266/ip_commands_common.c; sourceTree = "<group>"; };
 		A177192219F0F28200D49B9D /* ip_commands_info.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ip_commands_info.c; path = target/esp8266/ip_commands_info.c; sourceTree = "<group>"; };
@@ -111,6 +112,7 @@
 		A1EEC30A19DC7FCF00E94BBC = {
 			isa = PBXGroup;
 			children = (
+				A160F75A19FEECB40034DCFA /* lwip */,
 				A18881D619EDC4C000286BF7 /* LICENSE_HEADER */,
 				A18881D719EDC4C000286BF7 /* README.md */,
 				A1EEC37519DD7F5D00E94BBC /* target */,
