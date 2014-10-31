@@ -270,7 +270,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWLIF(dce_t* dce, void* group_ctx, int kin
     return DCE_OK;
 }
 
-void wifi_connection_monitor_cb(void* arg)
+void SECTION_ATTR wifi_connection_monitor_cb(void* arg)
 {
     wifi_ctx_t* ctx = (wifi_ctx_t*) arg;
     int mode = wifi_get_opmode();
@@ -286,13 +286,13 @@ void wifi_connection_monitor_cb(void* arg)
     }
 }
 
-void wifi_start_connection_monitor(wifi_ctx_t* wifi_ctx)
+void SECTION_ATTR wifi_start_connection_monitor(wifi_ctx_t* wifi_ctx)
 {
     os_timer_setfn(&wifi_ctx->connection_monitor_timer, (os_timer_func_t*) &wifi_connection_monitor_cb, wifi_ctx);
     os_timer_arm(&wifi_ctx->connection_monitor_timer, CONNECTION_MONITORING_INTERVAL_MS, REPEAT);
 }
 
-void wifi_stop_connection_monitor(wifi_ctx_t* wifi_ctx)
+void SECTION_ATTR wifi_stop_connection_monitor(wifi_ctx_t* wifi_ctx)
 {
     os_timer_disarm(&wifi_ctx->connection_monitor_timer);
 }
