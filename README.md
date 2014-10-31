@@ -6,7 +6,7 @@ AT protocol library and firmware
 This is an attempt to implement DCE and DTE sides of an AT protocol, mostly based on [Recommendation V.250].
 The code has two parts: a platform-independent code for basic DCE/DTE functions, and target-specific commands that control WiFi, TCP/IP, etc. The main target for DCE is an ESP8266 chip, but it is easy to add other targets as well, or pull the platform-independent code into another project.
 
-The AT commands supported by the ESP8266 target are described [in the wiki](https://github.com/igrr/atproto/wiki/AT-protocol-reference).
+The AT commands supported by the ESP8266 target are described [here](./commands.md).
 
 What works so far:
   - DCE (i.e modem side) only. Haven't started working on DTE (host) side.
