@@ -1,5 +1,5 @@
 /* Copyright (c) 2014 Ivan Grokhotkov. All rights reserved.
- * This file is part of the atproto AT protocol library
+ * This is a port of PubSubClient by Nicholas O'Leary in plain C99.
  *
  * Redistribution and use is permitted according to the conditions of the
  * 3-clause BSD license to be found in the LICENSE file.
@@ -19,7 +19,7 @@ mqttc_t* mqttc_create(mqttc_callback_t callback, void* callback_arg);
 void mqttc_release(mqttc_t* client);
 void mqttc_set_will(mqttc_t* client, const char* topic, const char* payload, int qos, int retain);
 void mqttc_set_auth(mqttc_t* client, const char* user, const char* password);
-void mqttc_connect(mqttc_t* client, uint32_t ip, int port);
+void mqttc_connect(mqttc_t* client, const char* id, uint32_t ip, int port);
 void mqttc_disconnect(mqttc_t* client);
 void mqttc_publish(mqttc_t* client, const char* topic, const char* payload, size_t payload_size, int retain);
 void mqttc_subscribe(mqttc_t* client, const char* topic, int qos);
