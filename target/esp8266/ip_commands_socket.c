@@ -398,7 +398,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPRD(dce_t* dce, void* group_ctx, int kind,
 {
     if (kind == DCE_TEST)
     {
-        dce_emit_extended_result_code(dce, "+CIPRD=<index>", -1, 1);
+        dce_emit_extended_result_code(dce, "+CIPRD:(0-6)", -1, 1);
         return DCE_OK;
     }
     if (argc != 1 || argv[0].type != ARG_TYPE_NUMBER)
@@ -432,6 +432,5 @@ dce_result_t SECTION_ATTR ip_handle_CIPRD(dce_t* dce, void* group_ctx, int kind,
     dce_emit_extended_result_code_with_args(dce, "CIPRD", -1, res, 2, 0);
     dce_emit_information_response(dce, connection->rx_buffer, size_to_read);
     connection->rx_buffer_pos -= size_to_read;
-    dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
