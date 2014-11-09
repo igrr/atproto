@@ -1,3 +1,5 @@
+include $(TARGET_DIR)/lwip.mk
+
 TARGET_OBJ_FILES := 	main.o \
 			uart.o \
 			interface_commands.o \
@@ -25,49 +27,8 @@ SDK_BASE := ../esp_iot_sdk_v0.9.2
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
 
-LWIP_DIR := $(TARGET_DIR)/../../lwip/src
-
 SDK_DRIVER_OBJ_FILES := 
 SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES))
-
-LWIP_OBJ_FILES:= api/api_lib.o \
-		api/api_msg.o \
-		api/err.o \
-		api/netbuf.o \
-		api/netdb.o \
-		api/netifapi.o \
-		api/pppapi.o \
-		api/sockets.o \
-		api/tcpip.o \
-		core/def.o \
-		core/dhcp.o \
-		core/dns.o \
-		core/inet_chksum.o \
-		core/init.o \
-		core/mem.o \
-		core/memp.o \
-		core/netif.o \
-		core/pbuf.o \
-		core/raw.o \
-		core/stats.o \
-		core/sys.o \
-		core/tcp.o \
-		core/tcp_in.o \
-		core/tcp_out.o \
-		core/timers.o \
-		core/udp.o \
-		core/ipv4/autoip.o \
-		core/ipv4/icmp.o \
-		core/ipv4/igmp.o \
-		core/ipv4/ip4.o \
-		core/ipv4/ip4_addr.o \
-		core/ipv4/ip_frag.o \
-		netif/etharp.o \
-		netif/ethernetif.o \
-		netif/slipif.o 
-
-LWIP_OBJ_PATHS := $(addprefix $(LWIP_DIR)/,$(LWIP_OBJ_FILES))
-
 
 CPPFLAGS += 	-I$(XTENSA_LIBS)/include \
 		-I$(SDK_BASE)/include \
@@ -82,7 +43,7 @@ LDFLAGS  += 	-L$(XTENSA_LIBS)/lib \
 CFLAGS+=-std=c99
 CPPFLAGS+=-DESP_PLATFORM=1
 
-LIBS := c gcc hal phy net80211 lwip wpa main json ssl upgrade upgrade_ssl
+LIBS := c gcc hal phy net80211 wpa main
 
 #-Werror 
 CFLAGS += -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
@@ -91,25 +52,26 @@ LDFLAGS	+= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 LD_SCRIPT := $(SDK_BASE)/ld/eagle.app.v6.ld
 
+LWIP_AR:=$(BIN_DIR)/lwipc.a
+
 APP_AR:=$(BIN_DIR)/app.a
 APP_OUT:=$(BIN_DIR)/app.out
 APP_FW_1 := $(BIN_DIR)/0x00000.bin
 APP_FW_2 := $(BIN_DIR)/0x40000.bin
 FULL_FW := $(BIN_DIR)/firmware.bin
-LWIP_AR:=$(BIN_DIR)/lwip.a
 
 $(LWIP_AR) : $(LWIP_OBJ_PATHS)
 	$(AR) cru $@ $^
 
 $(LWIP_AR): | $(BIN_DIR)
 
-$(APP_AR): $(COMMON_OBJ_PATHS) $(TARGET_OBJ_PATHS) $(SDK_DRIVER_OBJ_PATHS) $(LWIP_AR)
+$(APP_AR): $(COMMON_OBJ_PATHS) $(TARGET_OBJ_PATHS) $(SDK_DRIVER_OBJ_PATHS)
 	$(AR) cru $@ $^
 
 $(APP_AR): | $(BIN_DIR)
 
-$(APP_OUT): $(APP_AR)
-	$(LD) -T$(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(addprefix -l,$(LIBS)) $(APP_AR) -Wl,--end-group -o $@
+$(APP_OUT): $(APP_AR) $(LWIP_AR)
+	$(LD) -T$(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(addprefix -l,$(LIBS)) $(APP_AR) $(LWIP_AR) -Wl,--end-group -o $@
 
 $(APP_FW_1): $(APP_OUT)
 	$(ESPTOOL) -eo $(APP_OUT) -bo $@ -bs .text -bs .data -bs .rodata -bc -ec
