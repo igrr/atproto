@@ -52,6 +52,7 @@ APP_AR:=$(BIN_DIR)/app.a
 APP_OUT:=$(BIN_DIR)/app.out
 APP_FW_1 := $(BIN_DIR)/0x00000.bin
 APP_FW_2 := $(BIN_DIR)/0x40000.bin
+FULL_FW := $(BIN_DIR)/firmware.bin
 
 
 $(APP_AR): $(COMMON_OBJ_PATHS) $(TARGET_OBJ_PATHS) $(SDK_DRIVER_OBJ_PATHS)
@@ -68,7 +69,12 @@ $(APP_FW_1): $(APP_OUT)
 $(APP_FW_2): $(APP_OUT)
 	$(ESPTOOL) -eo $(APP_OUT) -es .irom0.text $@ -ec
 
-firmware: $(APP_FW_1) $(APP_FW_2)
+$(FULL_FW): $(APP_FW_1) $(APP_FW_2)
+	dd if=/dev/zero ibs=4k count=126 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
+	dd if=$(APP_FW_1) of=$(FULL_FW) bs=4k seek=0 conv=notrunc
+	dd if=$(APP_FW_2) of=$(FULL_FW) bs=4k seek=64 conv=notrunc
+
+firmware: $(APP_FW_1) $(APP_FW_2) $(FULL_FW)
 
 all: firmware
 
