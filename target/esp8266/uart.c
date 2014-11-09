@@ -45,7 +45,7 @@ void ICACHE_FLASH_ATTR uart0_wait_for_tx_fifo(size_t size_needed)
     while (true)
     {
         size_t tx_count = (READ_PERI_REG(UART_STATUS(0)) >> UART_TXFIFO_CNT_S) & UART_TXFIFO_CNT;
-        if (tx_count < (UART_TX_FIFO_SIZE - size_needed))
+        if (tx_count <= (UART_TX_FIFO_SIZE - size_needed))
             break;
     }
 }

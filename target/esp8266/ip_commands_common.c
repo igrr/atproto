@@ -37,6 +37,17 @@ int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx,
     {
         connection->conn = (struct espconn*) malloc(sizeof(struct espconn));
         memset(connection->conn, 0, sizeof(struct espconn));
+        if (protocol == ESPCONN_TCP)
+        {
+            connection->conn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
+            memset(connection->conn->proto.tcp, 0, sizeof(esp_tcp));
+        }
+        else
+        {
+            connection->conn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
+            memset(connection->conn->proto.udp, 0, sizeof(esp_udp));
+        }
+        connection->conn->type = protocol;
     }
     else
     {
@@ -44,19 +55,9 @@ int SECTION_ATTR ip_espconn_get(ip_ctx_t* ctx,
     }
     connection->conn->reverse = connection;
     
-    if (protocol == ESPCONN_TCP)
-    {
-        connection->conn->proto.tcp = (esp_tcp*) malloc(sizeof(esp_tcp));
-    }
-    else
-    {
-        connection->conn->proto.udp = (esp_udp*) malloc(sizeof(esp_udp));
-    }
-    connection->conn->type = protocol;
     connection->rx_buffer_size = rx_buffer_size;
     connection->rx_buffer_pos = 0;
     connection->rx_buffer = (char*) malloc(connection->rx_buffer_size);
-    
     return i;
 }
 
@@ -70,7 +71,7 @@ void  SECTION_ATTR ip_espconn_release(ip_ctx_t* ctx, int index)
     connection->rx_buffer = 0;
 }
 
-ip_tcp_server_t* ip_tcp_server_create(ip_ctx_t* ctx)
+ip_tcp_server_t* SECTION_ATTR ip_tcp_server_create(ip_ctx_t* ctx)
 {
     if (ctx->tcp_server.conn)
         return 0;
@@ -87,7 +88,7 @@ ip_tcp_server_t* ip_tcp_server_create(ip_ctx_t* ctx)
     return server;
 }
 
-void ip_tcp_server_release(ip_ctx_t* ctx)
+void SECTION_ATTR ip_tcp_server_release(ip_ctx_t* ctx)
 {
     if (!ctx->tcp_server.conn)
         return;
@@ -98,7 +99,7 @@ void ip_tcp_server_release(ip_ctx_t* ctx)
     server->conn = 0;
 }
 
-ip_udp_server_t* ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
+ip_udp_server_t* SECTION_ATTR ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
 {
     ip_udp_server_t* server = &ctx->udp_server;
     if (server->conn)
@@ -118,7 +119,7 @@ ip_udp_server_t* ip_udp_server_create(ip_ctx_t* ctx, size_t rx_buffer_size)
 
 }
 
-void ip_udp_server_release(ip_ctx_t* ctx)
+void SECTION_ATTR ip_udp_server_release(ip_ctx_t* ctx)
 {
     ip_udp_server_t* server = &ctx->udp_server;
     if (!server->conn)
