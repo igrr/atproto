@@ -372,8 +372,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int k
         {ARG_TYPE_NUMBER, .value.number = port},
         {ARG_TYPE_NUMBER, .value.number = rx_buffer_size},
     };
-    size_t argsc = (connection_type == ESPCONN_UDP) ? 3 : 2;
-    dce_emit_extended_result_code_with_args(dce, "CIPLISTEN", -1, args, argsc, 1);
+    dce_emit_extended_result_code_with_args(dce, "CIPLISTEN", -1, args, 3, 1);
     return DCE_OK;
 }
 
