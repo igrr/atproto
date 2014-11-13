@@ -34,6 +34,7 @@ typedef struct {
     ip_ctx_t* ctx;
     struct espconn* conn;
     int clients_count;
+    size_t rx_buffer_size;
     int clients[MAX_ESP_CONNECTIONS];
 } ip_tcp_server_t;
 

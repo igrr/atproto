@@ -42,7 +42,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPCREATE(dce_t* dce, void* group_ctx, int k
     }
     
     int port;
-    if (argc == 2 && argv[1].type == ARG_TYPE_NUMBER)
+    if (argc >= 2 && argv[1].type == ARG_TYPE_NUMBER)
         port = argv[1].value.number;
     else
         port = espconn_port();
@@ -170,7 +170,8 @@ static ip_ctx_t* s_tcp_accept_context = 0;
 
 void SECTION_ATTR ip_tcp_accept_callback(struct espconn* conn)
 {
-    int rx_buffer_size = 1024; // TODO: add server parameter
+    ip_tcp_server_t* server = (ip_tcp_server_t*) conn->reverse;
+    size_t rx_buffer_size = server->rx_buffer_size;
     int index = ip_espconn_get(s_tcp_accept_context, conn, ESPCONN_TCP, rx_buffer_size);
     int port = conn->proto.tcp->local_port;
     uint32_t remote_ip = *((uint32_t*)conn->proto.tcp->remote_ip);
@@ -314,15 +315,8 @@ dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int k
         return DCE_OK;
     }
     
-    if (connection_type == ESPCONN_TCP && argc == 3)
-    {
-        DCE_DEBUG("TCP server has no buffer_size argument");
-        dce_emit_basic_result_code(dce, DCE_RC_ERROR);
-        return DCE_OK;
-    }
-    
     int port;
-    if (argc == 2 && argv[1].type == ARG_TYPE_NUMBER)
+    if (argc >= 2 && argv[1].type == ARG_TYPE_NUMBER)
         port = argv[1].value.number;
     else
         port = espconn_port();
@@ -346,6 +340,7 @@ dce_result_t SECTION_ATTR ip_handle_CIPLISTEN(dce_t* dce, void* group_ctx, int k
             return DCE_OK;
         }
         connection = server->conn;
+        server->rx_buffer_size = rx_buffer_size;
         s_tcp_accept_context = ctx;
         connection->proto.tcp->local_port = port;
         connection->state = ESPCONN_NONE;
