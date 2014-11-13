@@ -42,7 +42,7 @@ void ICACHE_FLASH_ATTR target_dce_request_process_command_line(dce_t* dce)
     system_os_post(COMMAND_TASK_PRIORITY, 0, 0);
 }
 
-void command_task(os_event_t *events)
+void ICACHE_FLASH_ATTR command_task(os_event_t *events)
 {
     dce_process_command_line(dce);
 }
@@ -57,6 +57,11 @@ void ICACHE_FLASH_ATTR target_dce_reset()
     system_restart();
 }
 
+void ICACHE_FLASH_ATTR target_dce_init_factory_defaults()
+{
+    config_init_default();
+}
+
 void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
 {
     uart0_transmit(uart0, "\r\n########\r\n", 12);
@@ -66,23 +71,9 @@ void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
     system_restart();
 }
 
-void ICACHE_FLASH_ATTR config_init(void)
-{
-    config = config_get();
-    if (config->magic != CONFIG_MAGIC || config->version != CONFIG_VERSION)
-    {
-        // initialize default configuration
-        os_printf("\r\nSetting default configuration.\r\n");
-        config->magic = CONFIG_MAGIC;
-        config->version = CONFIG_VERSION;
-        config->baud_rate = 9600;
-        config_save();
-    }
-}
-
 void ICACHE_FLASH_ATTR user_init(void)
 {
-    config_init();
+    config = config_init();
     dce = dce_init(256);
     uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
     dce_register_ip_commands(dce);

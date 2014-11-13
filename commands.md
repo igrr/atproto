@@ -78,9 +78,11 @@ Enables or disables result code suppression. Information responses are not affec
 #### Reset to default settings (F)
 Command line | Response | Notes
 -------------|----------|-------
-```ATF```|```OK```|
+```AT&F0```|```OK```| Reset DCE settings to default values
+```AT&F1```|```OK```| Reset DCE settings, baud rate, and WiFi configuration
 
-Reset S-parameters S3, S4, S5, and Q, E, V settings to default values.
+DCE settings that are reset are: S-parameters S3, S4, S5, and Q, E, V settings.
+```AT&F1``` also wipes stored WiFi settings (AP and STA) and resets baud rate to the default value.
 
 #### ```<cr>``` code parameter (S3)
 Command line | Response | Notes

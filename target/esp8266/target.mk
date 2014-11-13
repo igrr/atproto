@@ -70,7 +70,7 @@ $(APP_FW_2): $(APP_OUT)
 	$(ESPTOOL) -eo $(APP_OUT) -es .irom0.text $@ -ec
 
 $(FULL_FW): $(APP_FW_1) $(APP_FW_2)
-	dd if=/dev/zero ibs=4k count=126 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
+	dd if=/dev/zero ibs=4k count=124 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
 	dd if=$(APP_FW_1) of=$(FULL_FW) bs=4k seek=0 conv=notrunc
 	dd if=$(APP_FW_2) of=$(FULL_FW) bs=4k seek=64 conv=notrunc
 

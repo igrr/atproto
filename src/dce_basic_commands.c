@@ -64,7 +64,16 @@ inline static dce_result_t SECTION_ATTR dce_handle_ATE(dce_t* ctx, int val)
 
 inline static dce_result_t SECTION_ATTR dce_handle_ATF(dce_t* ctx, int val)
 {
+    if (val != 0 && val != 1)
+    {
+        dce_emit_basic_result_code(ctx, DCE_RC_ERROR);
+        return DCE_OK;
+    }
+
     dce_init_defaults(ctx);
+    if (val == 1)
+        target_dce_init_factory_defaults();
+
     dce_emit_basic_result_code(ctx, DCE_RC_OK);
     return DCE_OK;
 }

@@ -37,6 +37,10 @@ void target_dce_request_process_command_line(dce_t* dce)
 {
     dce_process_command_line(dce);
 }
+    
+void target_dce_init_factory_defaults()
+{
+}
 
 }
 
