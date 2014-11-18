@@ -10,6 +10,7 @@
 #include "wifi_commands.h"
 #include "config_store.h"
 #include "user_interface.h"
+#include "ets_sys.h"
 
 #define CONNECTION_MONITORING_INTERVAL_MS 100
 #define ONCE 0
@@ -41,7 +42,9 @@ dce_result_t SECTION_ATTR wifi_handle_CWMODE(dce_t* dce, void* group_ctx, int ki
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
+        ETS_UART_INTR_DISABLE();
         wifi_set_opmode(argv[0].value.number);
+        ETS_UART_INTR_ENABLE();
         dce_emit_basic_result_code(dce, DCE_RC_OK);
     }
     return DCE_OK;
@@ -130,8 +133,10 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
         
         strcpy(conf.ssid, argv[0].value.string);
         strcpy(conf.password, argv[1].value.string);
+        ETS_UART_INTR_DISABLE();
         wifi_station_set_config(&conf);
         wifi_station_connect();
+        ETS_UART_INTR_ENABLE();
         dce_emit_basic_result_code(dce, DCE_RC_OK);
     }
     else
@@ -160,8 +165,10 @@ dce_result_t SECTION_ATTR wifi_handle_CWQAP(dce_t* dce, void* group_ctx, int kin
     struct station_config conf;
     *conf.ssid = 0;
     *conf.password = 0;
+    ETS_UART_INTR_DISABLE();
     wifi_station_set_config(&conf);
     wifi_station_disconnect();
+    ETS_UART_INTR_ENABLE();
     dce_emit_basic_result_code(dce, DCE_RC_OK);
     return DCE_OK;
 }
@@ -208,7 +215,9 @@ dce_result_t SECTION_ATTR wifi_handle_CWSAP(dce_t* dce, void* group_ctx, int kin
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_OK;
         }
+        ETS_UART_INTR_DISABLE();
         wifi_softap_set_config(&conf);
+        ETS_UART_INTR_ENABLE();
         dce_emit_basic_result_code(dce, DCE_RC_OK);
     }
     else
