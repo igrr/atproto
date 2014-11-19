@@ -12,16 +12,18 @@ TARGET_OBJ_FILES := main.o \
 
 TARGET_OBJ_PATHS := $(addprefix $(TARGET_DIR)/,$(TARGET_OBJ_FILES))
 
+TOOLCHAIN_PREFIX ?= xtensa-lx106-elf-
 XTENSA_TOOCHAIN := ../xtensa-lx106-elf/bin
-CC := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-gcc
-AR := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-ar
-LD := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-gcc
+CC := $(TOOLCHAIN_PREFIX)gcc
+AR := $(TOOLCHAIN_PREFIX)ar
+LD := $(TOOLCHAIN_PREFIX)gcc
 
-XTENSA_LIBS := ../RC-2010.1-linux/lx106/xtensa-elf
 
-ESPTOOL := ../esptool/esptool
+XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
 
-SDK_BASE := ../esp_iot_sdk_v0.9.2
+ESPTOOL ?= ../esptool/esptool
+
+SDK_BASE ?= ../esp_iot_sdk_v0.9.2
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
 
@@ -30,7 +32,9 @@ SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES
 
 CPPFLAGS += -I$(XTENSA_LIBS)/include \
 			-I$(SDK_BASE)/include \
-			-I$(SDK_AT_DIR)/include
+			-I$(SDK_AT_DIR)/include \
+			-Itarget/esp8266/driver \
+			-Itarget/esp8266
 
 LDFLAGS  += -L$(XTENSA_LIBS)/lib \
 			-L$(XTENSA_LIBS)/arch/lib \
