@@ -57,5 +57,7 @@ struct dce_
 };
 
 void dce_init_defaults(dce_t* dce);
+void dce_emit_response_prefix(dce_t* dce);
+void dce_emit_response_suffix(dce_t* dce);
 
 #endif//__DCE_PRIVATE_H

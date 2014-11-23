@@ -63,9 +63,18 @@ TEST_CASE("set echo s-parameter", "[dce]")
 TEST_CASE("set format s-parameter", "[dce]")
 {
     dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
     g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV0\r") == DCE_OK );
     REQUIRE( g_tx_data == "ATV0\r0\r");
+    g_tx_data.clear();
+    args.param3 = 123;
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3?\r") == DCE_OK );
+    REQUIRE( g_tx_data == "AT+TESTPARAM3?\r+TESTPARAM3:123\r" );
+    g_tx_data.clear();
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3=?\r") == DCE_OK );
+    REQUIRE( g_tx_data == "AT+TESTPARAM3=?\r+TESTPARAM3:(0-127)\r" );
     g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV1\r") == DCE_OK );
     REQUIRE( g_tx_data == "ATV1\r\r\nOK\r\n");

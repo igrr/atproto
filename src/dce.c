@@ -81,6 +81,28 @@ void SECTION_ATTR dce_register_command_group(dce_t* ctx, const char* leadin, con
     ctx->command_groups_count++;
 }
 
+void SECTION_ATTR dce_emit_response_prefix(dce_t* dce)
+{
+    const char crlf[] = {dce->cr, dce->lf};
+    if (dce->response_fmt == 1) // 6.2.6 DCE response format
+    {
+        target_dce_transmit(crlf, 2);
+    }
+}
+
+void SECTION_ATTR dce_emit_response_suffix(dce_t* dce)
+{
+    if (dce->response_fmt == 1) // 6.2.6 DCE response format
+    {
+        const char crlf[] = {dce->cr, dce->lf};
+        target_dce_transmit(crlf, 2);
+    }
+    else
+    {
+        target_dce_transmit(&dce->cr, 1);
+    }
+}
+
 void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t result)
 {
     dce->command_pending = 0;
@@ -88,22 +110,11 @@ void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t resul
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
 
-    if (dce->response_fmt == 0) // 6.2.6 DCE response format
-    {
-        const char* text = dce_result_code_v0[result];
-        size_t length = strlen(text);
-        target_dce_transmit(text, length);
-        target_dce_transmit(&dce->cr, 1);
-    }
-    else
-    {
-        const char crlf[] = {dce->cr, dce->lf};
-        target_dce_transmit(crlf, 2);
-        const char* text = dce_result_code_v1[result];
-        size_t length = strlen(text);
-        target_dce_transmit(text, length);
-        target_dce_transmit(crlf, 2);
-    }
+    dce_emit_response_prefix(dce);
+    const char* text = ((dce->response_fmt == 0)?dce_result_code_v0:dce_result_code_v1)[result];
+    size_t length = strlen(text);
+    target_dce_transmit(text, length);
+    dce_emit_response_suffix(dce);
 }
 
 void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, const arg_t* args, size_t argc, int reset_command_pending)
@@ -113,11 +124,9 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
     
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
-    const char crlf[] = {dce->cr, dce->lf};
-    if (dce->response_fmt == 1)
-    {
-        target_dce_transmit(crlf, 2);
-    }
+    
+    dce_emit_response_prefix(dce);
+    
     if (size == -1)
         size = strlen(command_name);
     target_dce_transmit("+", 1);
@@ -145,7 +154,7 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
         if (iarg != argc - 1)
             target_dce_transmit(",", 1);
     }
-    target_dce_transmit(crlf, 2);
+    dce_emit_response_suffix(dce);
 }
 
 void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response, size_t size, int reset_command_pending)
@@ -155,39 +164,30 @@ void SECTION_ATTR dce_emit_extended_result_code(dce_t* dce, const char* response
     
     if (dce->suppress_rc)   // 6.2.5 Result code suppression
         return;
-    const char crlf[] = {dce->cr, dce->lf};
-    if (dce->response_fmt == 1)
-    {
-        target_dce_transmit(crlf, 2);
-    }
+    
+    dce_emit_response_prefix(dce);
     if (size == -1)
         size = strlen(response);
     target_dce_transmit(response, size);
-    target_dce_transmit(crlf, 2);
+    dce_emit_response_suffix(dce);
 }
 
 void SECTION_ATTR dce_emit_information_response(dce_t* dce, const char* response, size_t size)
 {
-    const char crlf[] = {dce->cr, dce->lf};
-    if (dce->response_fmt == 1)
-    {
-        target_dce_transmit(crlf, 2);
-    }
+    dce_emit_response_prefix(dce);
     if (size == -1)
         size = strlen(response);
     target_dce_transmit(response, size);
-    target_dce_transmit(crlf, 2);
+    dce_emit_response_suffix(dce);
 }
 
 void SECTION_ATTR dce_continue_information_response(dce_t* dce, const char* response, size_t size)
 {
-    const char crlf[] = {dce->cr, dce->lf};
     if (size == -1)
         size = strlen(response);
     target_dce_transmit(response, size);
-    target_dce_transmit(crlf, 2);
+    dce_emit_response_suffix(dce);
 }
-
 
 dce_result_t SECTION_ATTR dce_parse_args(const char* cbuf, size_t size, size_t* pargc, arg_t* args)
 {
