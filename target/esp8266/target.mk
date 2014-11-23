@@ -23,7 +23,7 @@ XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
 
 ESPTOOL ?= ../esptool/esptool
 
-SDK_BASE ?= ../esp_iot_sdk_v0.9.2
+SDK_BASE ?= ../esp_iot_sdk_v0.9.3
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
 
