@@ -4,3 +4,4 @@ bin/
 xcuserdata
 project.xcworkspace
 upload.sh
+build_local.sh

@@ -24,7 +24,7 @@ void ICACHE_FLASH_ATTR uart0_rx_handler(uart_t* uart)
 {
     if (READ_PERI_REG(UART_INT_ST(0)) & UART_RXFIFO_FULL_INT_ST)
     {
-        while (1)
+        while(true)
         {
             int rx_count = (READ_PERI_REG(UART_STATUS(0)) >> UART_RXFIFO_CNT_S) & UART_RXFIFO_CNT;
             if (!rx_count)
@@ -42,7 +42,7 @@ void ICACHE_FLASH_ATTR uart0_rx_handler(uart_t* uart)
 
 void ICACHE_FLASH_ATTR uart0_wait_for_tx_fifo(size_t size_needed)
 {
-    while (1)
+    while (true)
     {
         size_t tx_count = (READ_PERI_REG(UART_STATUS(0)) >> UART_TXFIFO_CNT_S) & UART_TXFIFO_CNT;
         if (tx_count <= (UART_TX_FIFO_SIZE - size_needed))

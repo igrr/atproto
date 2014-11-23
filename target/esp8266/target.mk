@@ -25,16 +25,15 @@ ESPTOOL ?= ../esptool/esptool
 
 SDK_BASE ?= ../esp_iot_sdk_v0.9.3
 
-SDK_AT_DIR := $(SDK_BASE)/examples/at
+SDK_EXAMPLE_DIR := $(SDK_BASE)/examples/IoT_Demo
 
 SDK_DRIVER_OBJ_FILES := 
 SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES))
 
 CPPFLAGS += -I$(XTENSA_LIBS)/include \
 			-I$(SDK_BASE)/include \
-			-I$(SDK_AT_DIR)/include \
-			-Itarget/esp8266/driver \
-			-Itarget/esp8266
+			-Itarget/esp8266 \
+			-I$(SDK_EXAMPLE_DIR)/include
 
 LDFLAGS  += -L$(XTENSA_LIBS)/lib \
 			-L$(XTENSA_LIBS)/arch/lib \

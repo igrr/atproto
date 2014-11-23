@@ -1,23 +1,23 @@
-8,9d7
-< #include <stdint.h>
-< #include <stdbool.h>
-10a9
-> typedef unsigned char       uint8_t;
-11a11,12
-> typedef signed char         int8_t;
-> typedef unsigned short      uint16_t;
-12a14,15
-> typedef signed short        int16_t;
-> typedef unsigned long       uint32_t;
-13a17
-> typedef signed long         int32_t;
-14a19
-> typedef unsigned long long  uint64_t;
-41a47,48
-> typedef unsigned int        size_t;
-> 
-73a81
-> typedef unsigned char   bool;
-74a83,84
-> #define true            (1)
-> #define false           (0)
+7a8,9
+> #include <stdint.h>
+> #include <stdbool.h>
+9d10
+< typedef unsigned char       uint8_t;
+11,12d11
+< typedef signed char         int8_t;
+< typedef unsigned short      uint16_t;
+14,15d12
+< typedef signed short        int16_t;
+< typedef unsigned long       uint32_t;
+17d13
+< typedef signed long         int32_t;
+19d14
+< typedef unsigned long long  uint64_t;
+47,48d41
+< typedef unsigned int        size_t;
+< 
+81d73
+< typedef unsigned char   bool;
+83,84d74
+< #define true            (1)
+< #define false           (0)
