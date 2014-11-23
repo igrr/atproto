@@ -106,7 +106,7 @@ void SECTION_ATTR dce_emit_basic_result_code(dce_t* dce, dce_result_code_t resul
     }
 }
 
-void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, arg_t* args, size_t argc, int reset_command_pending)
+void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char* command_name, size_t size, const arg_t* args, size_t argc, int reset_command_pending)
 {
     if (reset_command_pending)
         dce->command_pending = 0;
@@ -125,7 +125,7 @@ void SECTION_ATTR dce_emit_extended_result_code_with_args(dce_t* dce, const char
     target_dce_transmit(":", 1);
     for (size_t iarg = 0; iarg < argc; ++iarg)
     {
-        arg_t* arg = args + iarg;
+        const arg_t* arg = args + iarg;
         if (arg->type == ARG_TYPE_STRING)
         {
             target_dce_transmit("\"", 1);
