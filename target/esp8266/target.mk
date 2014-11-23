@@ -43,7 +43,7 @@ LDFLAGS  += -L$(XTENSA_LIBS)/lib \
 CFLAGS+=-std=c99
 CPPFLAGS+=-DESP_PLATFORM=1
 
-LIBS := c gcc hal phy net80211 lwip wpa main json ssl upgrade upgrade_ssl
+LIBS := c gcc hal phy net80211 lwip wpa main json ssl pp
 
 #-Werror 
 CFLAGS += -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
