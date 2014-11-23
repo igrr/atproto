@@ -155,7 +155,7 @@ void SECTION_ATTR ip_tcp_disconnect_callback(struct espconn* connection)
     dce_emit_extended_result_code_with_args(arg->ctx->dce, "CIPDISCONNECT", -1, &res, 1, 0);
 }
 
-void SECTION_ATTR ip_tcp_reconnect_callback(struct espconn* connection, sint8 err)
+void SECTION_ATTR ip_tcp_reconnect_callback(struct espconn* connection, int8_t err)
 {
     ip_connection_t* arg = (ip_connection_t*) connection->reverse;
     arg_t res[] = {
