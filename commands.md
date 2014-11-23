@@ -175,6 +175,15 @@ Command line | Response | Notes
 First line of the information response is free heap size. Next 3 lines are the output of ```system_print_meminfo``` function.
 
 ## Interface control commands (+I)
+
+#### DCE Ready unsolicited result code (+IREADY)
+Command line | Response | Notes
+-------------|----------|-------
+none |```+IREADY:"atproto","0.1","a343e46"```| 
+
+This unsolicited result code is sent by the module when boot procedure is finished. The parameters are firmware name, firmware version, and firmware revision hash.
+This result code is always sent in V1 format.
+
 #### Debug output paramter (+IDBG)
 Command line | Response | Notes
 -------------|----------|-------
