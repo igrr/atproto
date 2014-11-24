@@ -19,7 +19,7 @@
 
 
 static const command_desc_t commands[] = {
-    { "CIPSTA",         &ip_handle_CIPSTA,          DCE_PARAM | DCE_READ },
+    { "CIPSTA",         &ip_handle_CIPSTA,          DCE_PARAM | DCE_READ | DCE_WRITE | DCE_TEST },
     { "CIPAP",          &ip_handle_CIPAP,           DCE_PARAM | DCE_READ },
     { "CIPSTAMAC",      &ip_handle_CIPSTAMAC,       DCE_PARAM | DCE_READ },
     { "CIPAPMAC",       &ip_handle_CIPAPMAC,        DCE_PARAM | DCE_READ },
