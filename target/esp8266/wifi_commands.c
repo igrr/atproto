@@ -130,7 +130,7 @@ dce_result_t SECTION_ATTR wifi_handle_CWJAP(dce_t* dce, void* group_ctx, int kin
             dce_emit_basic_result_code(dce, DCE_RC_ERROR);
             return DCE_RC_OK;
         }
-        
+        conf.bssid_set = 0;
         strcpy(conf.ssid, argv[0].value.string);
         strcpy(conf.password, argv[1].value.string);
         ETS_UART_INTR_DISABLE();
