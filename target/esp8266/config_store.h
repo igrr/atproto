@@ -23,6 +23,7 @@ typedef struct {
 
 config_t* config_get();
 void config_save();
-
+config_t* config_init();
+void config_init_default();
 
 #endif//CONFIG_STORE_H

@@ -10,7 +10,7 @@
 #include <sstream>
 std::string g_tx_data;
 bool g_reset = false;
-
+int g_factory_value = 0;
 
 extern "C" {
 #include "dce.h"
@@ -37,6 +37,11 @@ void target_dce_request_process_command_line(dce_t* dce)
 {
     dce_process_command_line(dce);
 }
+    
+void target_dce_init_factory_defaults()
+{
+    g_factory_value = 0;
+}
 
 }
 
@@ -58,12 +63,36 @@ TEST_CASE("set echo s-parameter", "[dce]")
 TEST_CASE("set format s-parameter", "[dce]")
 {
     dce_t* dce = dce_init(1024);
+    extended_commands_test_t args;
+    dce_register_test_commands(dce, &args);
     g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV0\r") == DCE_OK );
     REQUIRE( g_tx_data == "ATV0\r0\r");
     g_tx_data.clear();
+    args.param3 = 123;
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3?\r") == DCE_OK );
+    REQUIRE( g_tx_data == "AT+TESTPARAM3?\r+TESTPARAM3:123\r" );
+    g_tx_data.clear();
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT+TESTPARAM3=?\r") == DCE_OK );
+    REQUIRE( g_tx_data == "AT+TESTPARAM3=?\r+TESTPARAM3:(0-127)\r" );
+    g_tx_data.clear();
     REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV1\r") == DCE_OK );
     REQUIRE( g_tx_data == "ATV1\r\r\nOK\r\n");
+    dce_uninit(dce);
+}
+
+TEST_CASE("reset parameters", "[dce]")
+{
+    dce_t* dce = dce_init(1024);
+    g_tx_data.clear();
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "ATV0\r") == DCE_OK );
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT&F0\r") == DCE_OK );
+    g_tx_data.clear();
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT\r") == DCE_OK );
+    REQUIRE( g_tx_data == "AT\r\r\nOK\r\n");    // back to V1
+    g_factory_value = 42;
+    REQUIRE( DCE_HANDLE_INPUT_STR(dce, "AT&F1\r") == DCE_OK );
+    REQUIRE( g_factory_value == 0 );
     dce_uninit(dce);
 }
 

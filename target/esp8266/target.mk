@@ -14,18 +14,20 @@ TARGET_OBJ_FILES := 	main.o \
 
 TARGET_OBJ_PATHS := $(addprefix $(TARGET_DIR)/,$(TARGET_OBJ_FILES))
 
+TOOLCHAIN_PREFIX ?= xtensa-lx106-elf-
 XTENSA_TOOCHAIN := ../xtensa-lx106-elf/bin
-CC := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-gcc
-AR := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-ar
-LD := $(XTENSA_TOOCHAIN)/xtensa-lx106-elf-gcc
+CC := $(TOOLCHAIN_PREFIX)gcc
+AR := $(TOOLCHAIN_PREFIX)ar
+LD := $(TOOLCHAIN_PREFIX)gcc
 
-XTENSA_LIBS := ../RC-2010.1-linux/lx106/xtensa-elf
 
-ESPTOOL := ../esptool/esptool
+XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
 
-SDK_BASE := ../esp_iot_sdk_v0.9.2
+ESPTOOL ?= ../esptool/esptool
 
-SDK_AT_DIR := $(SDK_BASE)/examples/at
+SDK_BASE ?= ../esp_iot_sdk_v0.9.3
+
+SDK_EXAMPLE_DIR := $(SDK_BASE)/examples/IoT_Demo
 
 SDK_DRIVER_OBJ_FILES := 
 SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES))
@@ -34,6 +36,8 @@ CPPFLAGS += 	-I$(XTENSA_LIBS)/include \
 		-I$(SDK_BASE)/include \
 		-I$(SDK_AT_DIR)/include \
 		-I$(TARGET_DIR) \
+			-Itarget/esp8266 \
+			-I$(SDK_EXAMPLE_DIR)/include
 		-I$(LWIP_DIR)/include
 
 LDFLAGS  += 	-L$(XTENSA_LIBS)/lib \
@@ -43,7 +47,7 @@ LDFLAGS  += 	-L$(XTENSA_LIBS)/lib \
 CFLAGS+=-std=c99
 CPPFLAGS+=-DESP_PLATFORM=1
 
-LIBS := c gcc hal phy net80211 wpa main
+LIBS := c gcc hal phy net80211 wpa main json ssl pp
 
 #-Werror 
 CFLAGS += -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
@@ -80,7 +84,7 @@ $(APP_FW_2): $(APP_OUT)
 	$(ESPTOOL) -eo $(APP_OUT) -es .irom0.text $@ -ec
 
 $(FULL_FW): $(APP_FW_1) $(APP_FW_2)
-	dd if=/dev/zero ibs=4k count=126 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
+	dd if=/dev/zero ibs=4k count=124 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
 	dd if=$(APP_FW_1) of=$(FULL_FW) bs=4k seek=0 conv=notrunc
 	dd if=$(APP_FW_2) of=$(FULL_FW) bs=4k seek=64 conv=notrunc
 

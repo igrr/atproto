@@ -7,16 +7,26 @@
 
 #include "user_interface.h"
 #include "ip_commands_info.h"
-
+#include "dce_utils.h"
 
 void SECTION_ATTR ip_print_interface_ip(dce_t* dce, int interface, const char* cmdname)
 {
     struct ip_info ip;
     wifi_get_ip_info(interface, &ip);
-    char buf[32];
-    sprintf_ip(buf, ip.ip.addr);
-    arg_t arg = { ARG_TYPE_STRING, .value.string=buf };
-    dce_emit_extended_result_code_with_args(dce, cmdname, -1, &arg, 1, 1);
+    
+    char buf_ip[16];
+    sprintf_ip(buf_ip, ip.ip.addr);
+    char buf_mask[16];
+    sprintf_ip(buf_mask, ip.netmask.addr);
+    char buf_gw[16];
+    sprintf_ip(buf_gw, ip.gw.addr);
+    
+    arg_t args[] = {
+        { ARG_TYPE_STRING, .value.string=buf_ip },
+        { ARG_TYPE_STRING, .value.string=buf_mask },
+        { ARG_TYPE_STRING, .value.string=buf_gw },
+    };
+    dce_emit_extended_result_code_with_args(dce, cmdname, -1, args, 3, 1);
 }
 
 void SECTION_ATTR ip_print_interface_mac(dce_t* dce, int interface, const char* cmdname)
@@ -39,8 +49,52 @@ dce_result_t SECTION_ATTR ip_handle_CIPSTA(dce_t* dce, void* group_ctx, int kind
         dce_emit_basic_result_code(dce, DCE_RC_ERROR);
         return DCE_OK;
     }
-    ip_print_interface_ip(dce, STATION_IF, "CIPSTA");
-    return DCE_OK;
+    if (kind == DCE_READ)
+    {
+        ip_print_interface_ip(dce, STATION_IF, "CIPSTA");
+        return DCE_OK;
+    }
+    else if (kind == DCE_TEST)
+    {
+        dce_emit_extended_result_code(dce, "+CIPSTA=\"ip\",\"mask\",\"gateway\"", -1, 1);
+        return DCE_OK;
+    }
+    else
+    {
+        if (argc == 1 &&
+            argv[0].type == ARG_TYPE_NUMBER &&
+            argv[0].value.number == 0)
+        {
+            wifi_station_dhcpc_start();
+            dce_emit_basic_result_code(dce, DCE_RC_OK);
+        }
+        else if (argc == 3 &&
+                 argv[0].type == ARG_TYPE_STRING &&
+                 argv[1].type == ARG_TYPE_STRING &&
+                 argv[2].type == ARG_TYPE_STRING)
+        {
+            struct ip_info info;
+            if (dce_parse_ip(argv[0].value.string, (uint8_t*) &info.ip.addr) != 0 ||
+                dce_parse_ip(argv[1].value.string, (uint8_t*) &info.netmask.addr) != 0 ||
+                dce_parse_ip(argv[2].value.string, (uint8_t*) &info.gw.addr) != 0)
+            {
+                DCE_DEBUG("invalid ip address");
+                dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+                return DCE_OK;
+            }
+            
+            wifi_station_dhcpc_stop();
+            wifi_set_ip_info(STATION_IF, &info);
+            dce_emit_basic_result_code(dce, DCE_RC_OK);
+        }
+        else
+        {
+            DCE_DEBUG("invalid arguments");
+            dce_emit_basic_result_code(dce, DCE_RC_ERROR);
+        }
+
+        return DCE_OK;
+    }
 }
 
 dce_result_t SECTION_ATTR ip_handle_CIPAP(dce_t* dce, void* group_ctx, int kind, size_t argc, arg_t* argv)

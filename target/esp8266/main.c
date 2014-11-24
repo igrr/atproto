@@ -13,13 +13,16 @@
 
 #include "uart.h"
 #include "dce.h"
+#include "dce_commands.h"
 #include "interface_commands.h"
+#include "ip_commands.h"
 #include "config_store.h"
 #include "info_commands.h"
 #include "wifi_commands.h"
 
 #define COMMAND_TASK_PRIORITY 0
 #define COMMAND_QUEUE_SIZE    1
+#define COMMAND_LINE_LENGTH   256
 
 static uart_t* uart0;
 static dce_t* dce;
@@ -42,7 +45,7 @@ void ICACHE_FLASH_ATTR target_dce_request_process_command_line(dce_t* dce)
     system_os_post(COMMAND_TASK_PRIORITY, 0, 0);
 }
 
-void command_task(os_event_t *events)
+void ICACHE_FLASH_ATTR command_task(os_event_t *events)
 {
     dce_process_command_line(dce);
 }
@@ -57,42 +60,44 @@ void ICACHE_FLASH_ATTR target_dce_reset()
     system_restart();
 }
 
+void ICACHE_FLASH_ATTR target_dce_init_factory_defaults()
+{
+    config_init_default();
+}
+
 void ICACHE_FLASH_ATTR target_dce_assert(const char* message)
 {
     uart0_transmit(uart0, "\r\n########\r\n", 12);
-    uart0_transmit(uart0, message, os_strlen(message));
+    uart0_transmit(uart0, message, strlen(message));
     uart0_transmit(uart0, "\r\n########\r\n", 12);
     uart0_wait_for_transmit(uart0);
     system_restart();
 }
 
-void ICACHE_FLASH_ATTR config_init(void)
+void ICACHE_FLASH_ATTR init_done()
 {
-    config = config_get();
-    if (config->magic != CONFIG_MAGIC || config->version != CONFIG_VERSION)
-    {
-        // initialize default configuration
-        os_printf("\r\nSetting default configuration.\r\n");
-        config->magic = CONFIG_MAGIC;
-        config->version = CONFIG_VERSION;
-        config->baud_rate = 9600;
-        config_save();
-    }
+    arg_t args[] = {
+        { ARG_TYPE_STRING, .value.string = "atproto" },
+        { ARG_TYPE_STRING, .value.string = VERSION_STRING },
+        { ARG_TYPE_STRING, .value.string = REVISION_STRING }
+    };
+    dce_emit_extended_result_code_with_args(dce, "IREADY", -1, args, 3, 0);
 }
 
 void ICACHE_FLASH_ATTR user_init(void)
 {
-    config_init();
-    dce = dce_init(256);
+    config = config_init();
+    dce = dce_init(COMMAND_LINE_LENGTH);
     uart0 = uart0_init(config->baud_rate, &rx_dce_cb);
+    uart_set_debug(0);
     dce_register_ip_commands(dce);
     dce_register_wifi_commands(dce);
     dce_register_interface_commands(dce, uart0);
     dce_register_info_commands(dce);
-    uart_set_debug(0);
     system_os_task( command_task,
                     COMMAND_TASK_PRIORITY,
                     command_queue,
                     COMMAND_QUEUE_SIZE);
+    system_init_done_cb(&init_done);
 }
 

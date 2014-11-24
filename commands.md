@@ -39,6 +39,43 @@ Extended syntax results have the following format: ```+<name>:[value1[,value2[,.
 
 For example, the "get wifi connection status" command ```AT+CWSTAT?``` may return ```+CWSTAT:5``` as a result code. Keep in mind that the result code will be surrounded with additional cr's and lf's as outlined above, depending on the formatting option (V0 or V1).
 
+### Commands
+
+Commands take two forms: basic commands and extended commands. Extended command names start with a plus (```+```) sign. Additionally all commands are divided into READ, WRITE (EXEC), and TEST commands by their semantical meaning. Parameters can be typically read, written and tested, although there are some read-only parameters. Actions can be executed. WRITE and EXEC commands have identical syntax.
+
+#### Basic commands
+
+Basic WRITE commands take one optional integer argument that directly follows the command. If the argument is not present, the default value is assumed. READ commands have no arguments.
+
+Command type | Command line format | Example
+-------------|---------------------|----------
+WRITE | ```AT<command name>[argument]<cr>``` |  ```ATE0<cr>``` 
+READ  | ```AT<command name>?<cr>``` |  ```ATS3?<cr>```
+
+#### Extended commands
+
+Extended format commands can be either READ, WRITE, or TEST commands.
+
+WRITE commands take zero or more arguments. Multiple arguments are separated with commas.
+
+Command type | Command line format | Example
+-------------|---------------------|----------
+WRITE (EXEC)  | ```AT<command name>[=argument1[,argument2[,...]]]<cr>``` |  ```AT+CWSAP="ESP_AP","pwd_1234",1,4<cr>```
+READ         | ```AT<command name>?<cr>``` | ```AT+IPR?<cr>```
+TEST (QUERY) | ```AT<command name>=?<cr>``` | ```AT+CWMODE=?<cr>```
+
+There are two types of arguments: numbers and strings. Numbers are nonnegative decimal integers. Strings are quoted with double quotes (```"string"```), and may contain the following escape character codes:
+
+Escape code | Character
+-----------|--------------
+ ```\r```        | ```<cr>``` character (ASCII code 13)
+ ```\n```   | ```<lf>``` character (ASCII code 10)
+ ```\"```     | ```"``` (double quote)
+ ```\\```     | ```\``` (backslash)
+ ```\xmn```   | Symbol with ASCII code 0xmn. ```mn``` should be lowercase hex characters. 
+ 
+Note that ```\x00``` code is not supported. This should probably be fixed in future.
+
 
 ## Basic commands
 #### Reset command (Z)
@@ -78,9 +115,11 @@ Enables or disables result code suppression. Information responses are not affec
 #### Reset to default settings (F)
 Command line | Response | Notes
 -------------|----------|-------
-```ATF```|```OK```|
+```AT&F0```|```OK```| Reset DCE settings to default values
+```AT&F1```|```OK```| Reset DCE settings, baud rate, and WiFi configuration
 
-Reset S-parameters S3, S4, S5, and Q, E, V settings to default values.
+DCE settings that are reset are: S-parameters S3, S4, S5, and Q, E, V settings.
+```AT&F1``` also wipes stored WiFi settings (AP and STA) and resets baud rate to the default value.
 
 #### ```<cr>``` code parameter (S3)
 Command line | Response | Notes
@@ -136,6 +175,15 @@ Command line | Response | Notes
 First line of the information response is free heap size. Next 3 lines are the output of ```system_print_meminfo``` function.
 
 ## Interface control commands (+I)
+
+#### DCE Ready unsolicited result code (+IREADY)
+Command line | Response | Notes
+-------------|----------|-------
+none |```+IREADY:"atproto","0.1","a343e46"```| 
+
+This unsolicited result code is sent by the module when boot procedure is finished. The parameters are firmware name, firmware version, and firmware revision hash.
+This result code is always sent in V1 format.
+
 #### Debug output paramter (+IDBG)
 Command line | Response | Notes
 -------------|----------|-------
@@ -168,7 +216,7 @@ Mode id | Meaning
 2 | SoftAP mode
 3 | Station + SoftAP mode
 
-After changing wifi mode, reset the module with ATZ command (this is required for Espressif's IoT SDK ≤ 0.9.1. The mode is saved to flash and is preserved when the module is reset.
+After changing wifi mode, reset the module with ATZ command (this is required for Espressif's IoT SDK ≤ 0.9.1). The mode is saved to flash and is preserved when the module is reset.
 
 #### List access points (+CWLAP)
 Command line | Response 
@@ -249,10 +297,16 @@ This command will return ```ERROR``` result code if current WiFi mode (as return
 
 ## TCP, UDP commands
 
-#### Get IP address of STA interface (+CIPSTA)
+#### Get/set IP address of STA interface (+CIPSTA)
 Command line | Response | Notes
 -------------|----------|-------
-```AT+CIPSTA?```|Extended syntax result code: ```+CIPSTA:"192.168.1.120"```|
+```AT+CIPSTA=?```|+CIPSTA="ip","mask","gateway"| Query command format
+```AT+CIPSTA?```|Extended syntax result code: ```+CIPSTA:"192.168.1.120","255.255.255.0","192.168.1.1"```|Get IP address, network mask, gateway IP address
+
+Command line | Response | Notes
+-------------|----------|-------
+```AT+CIPSTA="192.168.1.170","255.255.255.0","192.168.1.1"```|```OK```|Set IP address, network mask, and gateway
+```AT+CIPSTA=0```|```OK```|Get address from DHCP client
 
 This command will return ```ERROR``` result code if current WiFi mode (as returned by ```+CWMODE?```) is not 1 or 3.
 
@@ -304,12 +358,27 @@ When you are done using the context, recycle it with a call to ```+CIPCLOSE``` c
 Command line | Response | Notes
 -------------|----------|-------
 ```AT+CIPCLOSE=?```|```+CIPCLOSE:(0-6)```| Query command format
-```AT+CIPCLOSE=0```|```OK```|
+```AT+CIPCLOSE=0``` | ```OK``` | 
+
 
 The command will return ```ERROR``` if the context with specified id is not in use.
 
-This command applies to client contexts created using ```+CIPCREATE``` and server contexts created using ```+CIPLISTEN```
+This command applies to client contexts created using ```+CIPCREATE``` and connections obtained from ```+CIPACCEPT``` unsolicited result code.
 
+#### Create server context (+CIPLISTEN)
+Command line | Response | Notes
+-------------|----------|-------
+```AT+CIPLISTEN=?``` | ```+CIPLISTEN:\"TCP|UDP\"[,port][,buffer_size]``` | Query command format
+```+CIPLISTEN="TCP",80,2048``` | ```+CIPLISTEN=6,80,2048``` | Listen on port 80, create contexts for connecting clients with 2048 bytes RX buffer
+
+Start server listening on a given port. The server binds to all available interfaces (AP and STA).
+
+#### Client connected to server unsolicited result code (+CIPACCEPT)
+Command line | Response | Notes
+-------------|----------|-------
+none|```+CIPACCEPT=0,"192.169.0.120"```|
+
+This unsolicited result code is issued when a client connects to the server that was set up with ```+CIPLISTEN``` command. The first parameter is a context id for the client connection, the second parameter is the IP address of the client.
 
 #### Initiate client connection (+CIPCONNECT)
 Command line | Response | Notes
@@ -394,5 +463,5 @@ Command line | Response | Notes
 
 Returns context id and the number of bytes to be read.
 Information response that follows is the data received, as plain text.
-Note that like any other information response, there are additional <cr>'s and <lf>'s at the beginning and at the end ([see above](#rc_and_formatting)).
+Note that like any other information response, there are additional ```<cr>```'s and ```<lf>```'s at the beginning and at the end ([see above](#rc_and_formatting)).
 

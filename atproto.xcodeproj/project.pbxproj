@@ -335,7 +335,7 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"\"$(PROJECT_DIR)/include\"",
-					"\"$(PROJECT_DIR)/../esp_iot_sdk_v0.9.2/include\"",
+					"\"$(PROJECT_DIR)/../esp_iot_sdk_v0.9.3/include\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -348,7 +348,7 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"\"$(PROJECT_DIR)/include\"",
-					"\"$(PROJECT_DIR)/../esp_iot_sdk_v0.9.2/include\"",
+					"\"$(PROJECT_DIR)/../esp_iot_sdk_v0.9.3/include\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
