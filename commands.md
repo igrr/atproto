@@ -297,11 +297,14 @@ This command will return ```ERROR``` result code if current WiFi mode (as return
 
 ## TCP, UDP commands
 
-#### Get IP address of STA interface (+CIPSTA)
+#### Get/set IP address of STA interface (+CIPSTA)
 Command line | Response | Notes
 -------------|----------|-------
 ```AT+CIPSTA=?```|+CIPSTA="ip","mask","gateway"| Query command format
 ```AT+CIPSTA?```|Extended syntax result code: ```+CIPSTA:"192.168.1.120","255.255.255.0","192.168.1.1"```|Get IP address, network mask, gateway IP address
+
+Command line | Response | Notes
+-------------|----------|-------
 ```AT+CIPSTA="192.168.1.170","255.255.255.0","192.168.1.1"```|```OK```|Set IP address, network mask, and gateway
 ```AT+CIPSTA=0```|```OK```|Get address from DHCP client
 
