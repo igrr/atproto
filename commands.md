@@ -300,7 +300,10 @@ This command will return ```ERROR``` result code if current WiFi mode (as return
 #### Get IP address of STA interface (+CIPSTA)
 Command line | Response | Notes
 -------------|----------|-------
-```AT+CIPSTA?```|Extended syntax result code: ```+CIPSTA:"192.168.1.120"```|
+```AT+CIPSTA=?```|+CIPSTA="ip","mask","gateway"| Query command format
+```AT+CIPSTA?```|Extended syntax result code: ```+CIPSTA:"192.168.1.120","255.255.255.0","192.168.1.1"```|Get IP address, network mask, gateway IP address
+```AT+CIPSTA="192.168.1.170","255.255.255.0","192.168.1.1"```|```OK```|Set IP address, network mask, and gateway
+```AT+CIPSTA=0```|```OK```|Get address from DHCP client
 
 This command will return ```ERROR``` result code if current WiFi mode (as returned by ```+CWMODE?```) is not 1 or 3.
 
