@@ -129,6 +129,15 @@ extern u8_t memp_memory_PBUF_POOL_base[];
 #define mem_zalloc pvPortZalloc
 #endif
 
+#define LWIP_RAND()  rand()
+
+static inline u32_t sys_now(void)
+{
+	return NOW()/(TIMER_CLK_FREQ/1000);
+}
+
+#define LWIP_OPEN_SRC
+
 
 
 

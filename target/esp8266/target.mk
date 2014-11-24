@@ -19,6 +19,7 @@ XTENSA_TOOCHAIN := ../xtensa-lx106-elf/bin
 CC := $(TOOLCHAIN_PREFIX)gcc
 AR := $(TOOLCHAIN_PREFIX)ar
 LD := $(TOOLCHAIN_PREFIX)gcc
+OBJCOPY := $(TOOLCHAIN_PREFIX)objcopy
 
 
 XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
@@ -34,11 +35,9 @@ SDK_DRIVER_OBJ_PATHS := $(addprefix $(SDK_AT_DIR)/driver/,$(SDK_DRIVER_OBJ_FILES
 
 CPPFLAGS += 	-I$(XTENSA_LIBS)/include \
 		-I$(SDK_BASE)/include \
-		-I$(SDK_AT_DIR)/include \
 		-I$(TARGET_DIR) \
-			-Itarget/esp8266 \
-			-I$(SDK_EXAMPLE_DIR)/include
-		-I$(LWIP_DIR)/include
+		-I$(LWIP_DIR)/include \
+		-I$(SDK_EXAMPLE_DIR)/include
 
 LDFLAGS  += 	-L$(XTENSA_LIBS)/lib \
 		-L$(XTENSA_LIBS)/arch/lib \
@@ -65,6 +64,12 @@ APP_FW_2 := $(BIN_DIR)/0x40000.bin
 FULL_FW := $(BIN_DIR)/firmware.bin
 
 $(LWIP_AR) : $(LWIP_OBJ_PATHS)
+	for file in $(LWIP_OBJ_PATHS); do \
+		$(OBJCOPY) \
+		--rename-section .text=.irom0.text \
+		--rename-section .literal=.irom0.literal \
+		$$file; \
+	done
 	$(AR) cru $@ $^
 
 $(LWIP_AR): | $(BIN_DIR)

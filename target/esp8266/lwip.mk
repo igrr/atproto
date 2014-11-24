@@ -34,6 +34,12 @@ LWIP_OBJ_FILES:= api/api_lib.o \
 		core/ipv4/ip_frag.o \
 		netif/etharp.o \
 		netif/ethernetif.o \
-		netif/slipif.o 
+		netif/slipif.o \
+		espconn/dhcpserver.o \
+		espconn/espconn.o \
+		espconn/espconn_tcp.o \
+		espconn/espconn_udp.o \
+		espconn/netio.o \
+		espconn/ping.o 
 
 LWIP_OBJ_PATHS := $(addprefix $(LWIP_DIR)/,$(LWIP_OBJ_FILES))
