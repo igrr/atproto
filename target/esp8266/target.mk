@@ -21,8 +21,6 @@ LD := $(TOOLCHAIN_PREFIX)gcc
 
 XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
 
-ESPTOOL ?= ../esptool/esptool
-
 SDK_BASE ?= ../esp_iot_sdk_v0.9.3
 
 SDK_AT_DIR := $(SDK_BASE)/examples/at
@@ -53,7 +51,7 @@ LDFLAGS	+= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 LD_SCRIPT := $(SDK_BASE)/ld/eagle.app.v6.ld
 
 APP_AR:=$(BIN_DIR)/app.a
-APP_OUT:=$(BIN_DIR)/app.out
+APP_OUT:=$(BIN_DIR)/app.elf
 APP_FW_1 := $(BIN_DIR)/0x00000.bin
 APP_FW_2 := $(BIN_DIR)/0x40000.bin
 FULL_FW := $(BIN_DIR)/firmware.bin
@@ -67,18 +65,7 @@ $(APP_AR): | $(BIN_DIR)
 $(APP_OUT): $(APP_AR)
 	$(LD) -T$(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(addprefix -l,$(LIBS)) $(APP_AR) -Wl,--end-group -o $@
 
-$(APP_FW_1): $(APP_OUT)
-	$(ESPTOOL) -eo $(APP_OUT) -bo $@ -bs .text -bs .data -bs .rodata -bc -ec
-
-$(APP_FW_2): $(APP_OUT)
-	$(ESPTOOL) -eo $(APP_OUT) -es .irom0.text $@ -ec
-
-$(FULL_FW): $(APP_FW_1) $(APP_FW_2)
-	dd if=/dev/zero ibs=4k count=124 | LC_ALL=C tr "\000" "\377" >$(FULL_FW)
-	dd if=$(APP_FW_1) of=$(FULL_FW) bs=4k seek=0 conv=notrunc
-	dd if=$(APP_FW_2) of=$(FULL_FW) bs=4k seek=64 conv=notrunc
-
-firmware: $(APP_FW_1) $(APP_FW_2) $(FULL_FW)
+firmware: $(APP_OUT)
 
 all: firmware
 
