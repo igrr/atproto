@@ -18,6 +18,7 @@ CC := $(TOOLCHAIN_PREFIX)gcc
 AR := $(TOOLCHAIN_PREFIX)ar
 LD := $(TOOLCHAIN_PREFIX)gcc
 
+ESPTOOL ?= ../esptool/esptool.py
 
 XTENSA_LIBS ?= $(shell $(CC) -print-sysroot)
 
@@ -66,6 +67,12 @@ $(APP_OUT): $(APP_AR)
 	$(LD) -T$(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(addprefix -l,$(LIBS)) $(APP_AR) -Wl,--end-group -o $@
 
 firmware: $(APP_OUT)
+
+split_image: firmware
+	$(ESPTOOL) make_split_image $(APP_OUT) $(APP_FW_1) $(APP_FW_2)
+
+image: firmware
+	$(ESPTOOL) make_image $(APP_OUT) $(FULL_FW)
 
 all: firmware
 
