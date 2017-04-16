@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A15417A41A017B6D00D448B4 /* mqtt_client.c in Sources */ = {isa = PBXBuildFile; fileRef = A1438C3219F6E24200E40B50 /* mqtt_client.c */; };
 		A18881D819EDC4C000286BF7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = A18881D719EDC4C000286BF7 /* README.md */; };
 		A1EEC32719DC812100E94BBC /* dce_basic_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32119DC812100E94BBC /* dce_basic_commands.c */; };
 		A1EEC32A19DC812100E94BBC /* dce.c in Sources */ = {isa = PBXBuildFile; fileRef = A1EEC32419DC812100E94BBC /* dce.c */; };
@@ -35,6 +36,8 @@
 		A13BCD1D19E3B83200C12FFB /* uart.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uart.c; path = target/esp8266/uart.c; sourceTree = "<group>"; };
 		A13BCD1E19E3B83200C12FFB /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = target/esp8266/main.c; sourceTree = "<group>"; };
 		A13BCD2119E3CDFD00C12FFB /* uart.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = uart.h; path = target/esp8266/uart.h; sourceTree = "<group>"; };
+		A1438C3219F6E24200E40B50 /* mqtt_client.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mqtt_client.c; path = src/mqtt_client.c; sourceTree = "<group>"; };
+		A1438C3319F6E24200E40B50 /* mqtt_client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mqtt_client.h; path = src/mqtt_client.h; sourceTree = "<group>"; };
 		A155471C19E470FF00E6425A /* dce_target.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dce_target.h; path = include/dce_target.h; sourceTree = "<group>"; };
 		A155471D19E5409E00E6425A /* interface_commands.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = interface_commands.c; path = target/esp8266/interface_commands.c; sourceTree = "<group>"; };
 		A155471E19E5409E00E6425A /* interface_commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = interface_commands.h; path = target/esp8266/interface_commands.h; sourceTree = "<group>"; };
@@ -141,6 +144,8 @@
 				A1EEC32419DC812100E94BBC /* dce.c */,
 				A1EEC33319DC814C00E94BBC /* dce.h */,
 				A155471C19E470FF00E6425A /* dce_target.h */,
+				A1438C3219F6E24200E40B50 /* mqtt_client.c */,
+				A1438C3319F6E24200E40B50 /* mqtt_client.h */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -241,6 +246,7 @@
 			files = (
 				A1EEC37F19DD7F7B00E94BBC /* tests.cpp in Sources */,
 				A1EEC37E19DD7F7B00E94BBC /* dce_test_commands.c in Sources */,
+				A15417A41A017B6D00D448B4 /* mqtt_client.c in Sources */,
 				A1EEC37D19DD7F7B00E94BBC /* test_dce_utils.cpp in Sources */,
 				A1EEC32C19DC812100E94BBC /* dce_utils.c in Sources */,
 				A1EEC32A19DC812100E94BBC /* dce.c in Sources */,
